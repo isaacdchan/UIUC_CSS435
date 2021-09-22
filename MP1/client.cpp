@@ -11,6 +11,8 @@
 #include <sys/socket.h>
 #include <ctype.h>
 #include <arpa/inet.h>
+#include <string>
+using namespace std;
 
 #define OUTPUT_FILE "output"
 #define MAX_PROTOCOL_SIZE 100
@@ -19,7 +21,8 @@
 #define MAX_IP_SIZE 100
 #define MAX_PORT_SIZE 4
 
-int extract_status_code(char* line) {
+
+int extract_status_code(char line[]) {
 	char* token = strtok(line, " ");
 	char** tokens = (char**) malloc(sizeof(char*) * 10);
 
@@ -34,7 +37,7 @@ int extract_status_code(char* line) {
 	return status_code;
 }
 
-char** parse_response_headers(char* response) {
+char** parse_response_header(char response[]) {
 	char* line = strtok(response, "\n");
 	int num_lines = 7;
 	char** lines = (char**) malloc(sizeof(char*) * num_lines);
@@ -48,52 +51,32 @@ char** parse_response_headers(char* response) {
 	return lines;
 }
 
-void skip_first_seven_lines(char* response, FILE* fp, int is_binary) {
-	printf("Raw: %s\n", response);
+char* strip_header(char* original) {
+	char* copy = (char*) malloc(MAX_DATA_SIZE);
 
-	int num_newlines = 0;
-	for (int i=0; i < strlen(response); i++) {
-		if (response[i] == '\n') {
-			num_newlines++;
-		}
+	char* header = strstr(original, "Last-Modified");
+	int idx = (int)(header - original); 
+	memcpy(copy, &original[idx+48], MAX_DATA_SIZE);
 
-		if (num_newlines >= 7) {
-			// copy contents to new response sans header
-		}
-	}
-	printf("num newlines: %d\n", num_newlines);
-
-	char* line = strtok(response, "\n");
-	int num_lines = 0;
-
-	while (line != NULL) {
-		if (num_lines >= 7) {
-			// leading to trailing new line at end of file
-			if (is_binary) {
-				fwrite(line, 1, sizeof(line), fp);
-			} else{
-				fprintf(fp, "%s", line);
-			}
-		}
-        line = strtok(NULL, "\n");
-		if (num_lines >= 7 && line != NULL && !is_binary) {
-			fprintf(fp, "\n");
-		}
-		num_lines++;
-	}
+	return copy;
 }
 
 void handle_response(int sockfd) {
 	char response[MAX_DATA_SIZE];
 	char response_copy[MAX_DATA_SIZE];
 
+	int bytes_received, response_size;
 	int first_response = 1;
 	int is_binary;
-	FILE* fp = fopen(OUTPUT_FILE, "w");
+	FILE* fp = fopen(OUTPUT_FILE, "w+b");
 
 	while (1) {
-		int bytes_received = recv(sockfd, response, MAX_DATA_SIZE-1, 0);
+		memset(response, 0, MAX_DATA_SIZE);
+		bytes_received = recv(sockfd, response, MAX_DATA_SIZE+10000, 0);
+		response_size = strlen(response);
+		printf("Response Size: %d\n", response_size);
 		printf("Bytes Received: %d\n", bytes_received);
+
 		if (bytes_received == -1) {
 			perror("recv");
 			exit(1);
@@ -101,14 +84,12 @@ void handle_response(int sockfd) {
 			break;
 		}
 
-		response[bytes_received] = '\0';
 		if (first_response) {
 			first_response = 0;
 
 			memcpy(response_copy, response, sizeof(response));
-			char** headers = parse_response_headers(response_copy);
+			char** headers = parse_response_header(response_copy);
 			int status_code = extract_status_code(headers[0]);
-			printf("Status Code: %d\n", status_code);
 
 			if (status_code == 404) {
 				fprintf(fp, "FILENOTFOUND");
@@ -117,15 +98,19 @@ void handle_response(int sockfd) {
 
 			headers[3][strcspn(headers[3], "\r\n")] = 0;
 			is_binary = strcmp(headers[3], "Content-type: application/octet-stream") != 0;
-			skip_first_seven_lines(response, fp, is_binary);
-
+			if (!is_binary) { response[bytes_received] = '\0'; }
 			free(headers);
+
+			char* new_response = strip_header(response);
+			strcpy(response, new_response);
+
+			free(new_response);
+		}
+
+		if (is_binary) {
+			fwrite(response, 1, MAX_DATA_SIZE, fp);
 		} else {
-			if (is_binary) {
-				fwrite(response, 1, sizeof(response), fp);
-			} else{
-				fprintf(fp, "%s", response);
-			}
+			fprintf(fp, "%s", response);
 		}
 	}
 
@@ -170,11 +155,6 @@ int main(int argc, char *argv[]) {
         protocol[i] = toupper(protocol[i]);
     }
 
-	printf("%s\n", protocol);
-	printf("%s\n", ip);
-	printf("%d\n", int_port);
-	printf("%s\n", path);
-
 	if (strcmp(protocol, "HTTP") != 0 && strcmp(protocol, "HTTPS") != 0) {
 		FILE* fp = fopen(OUTPUT_FILE, "w");
 		fprintf(fp, "INVALIDPROTOCOL");
@@ -218,14 +198,13 @@ int main(int argc, char *argv[]) {
 
 	freeaddrinfo(servinfo); // all done with this structure
 
-	char request[100];
+	char request[700];
 	sprintf(request, "GET %s %s/1.0\n\n", path, protocol);
 	// sprintf(request, "GET /test_folder/example_file HTTP/1.0\n\n");
 
 	size_t bytes_to_send = strlen(request);
 	if (send(sockfd, request, bytes_to_send, 0) == -1)
 		perror("send");
-
 
 	handle_response(sockfd);
 	return 0;

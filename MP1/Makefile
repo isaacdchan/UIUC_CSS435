@@ -5,7 +5,7 @@
 # NOTE: if you decide to write your solution in C++, you will have to change the compiler 
 # in this file. 
 
-CC=gcc
+CC=g++
 CC_OPTS=
 CC_LIBS=
 CC_DEFINES=
@@ -21,8 +21,8 @@ all: client
 # client C depends on source file client.c, if that changes, make client will 
 # rebuild the binary
 
-client: client.c
-	@${CC} ${CC_ARGS} -o client client.c
+client: client.cpp
+	@${CC} ${CC_ARGS} -o client client.cpp
 	
 
 clean:
