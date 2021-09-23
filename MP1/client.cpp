@@ -65,16 +65,14 @@ void handle_response(int sockfd) {
 	char response[MAX_DATA_SIZE];
 	char response_copy[MAX_DATA_SIZE];
 
-	int bytes_received, response_size;
+	int bytes_received;
 	int first_response = 1;
 	int is_binary;
 	FILE* fp = fopen(OUTPUT_FILE, "w+b");
 
 	while (1) {
 		memset(response, 0, MAX_DATA_SIZE);
-		bytes_received = recv(sockfd, response, MAX_DATA_SIZE+10000, 0);
-		response_size = strlen(response);
-		printf("Response Size: %d\n", response_size);
+		bytes_received = recv(sockfd, response, MAX_DATA_SIZE, 0);
 		printf("Bytes Received: %d\n", bytes_received);
 
 		if (bytes_received == -1) {
@@ -102,16 +100,22 @@ void handle_response(int sockfd) {
 			free(headers);
 
 			char* new_response = strip_header(response);
-			strcpy(response, new_response);
+			// memcpy(response, new_response, sizeof(new_response));
+			if (is_binary) {
+				fwrite(new_response, 1, bytes_received, fp);
+			} else {
+				fprintf(fp, "%s", new_response);
+			}
 
 			free(new_response);
+		} else {
+			// if (is_binary) {
+			// 	fwrite(response, 1, bytes_received, fp);
+			// } else {
+			// 	fprintf(fp, "%s", response);
+			// }
 		}
 
-		if (is_binary) {
-			fwrite(response, 1, MAX_DATA_SIZE, fp);
-		} else {
-			fprintf(fp, "%s", response);
-		}
 	}
 
 	fclose(fp);
