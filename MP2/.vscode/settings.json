@@ -1,0 +1,14 @@
+{
+	"files.associations": {
+		"string.h": "c",
+		"sstream": "cpp",
+		"regex": "cpp",
+		"tuple": "cpp",
+		"imports.h": "c",
+		"iostream": "c",
+		"bitset": "cpp",
+		"cstring": "cpp",
+		"iosfwd": "cpp"
+	},
+	"C_Cpp.errorSquiggles": "Enabled"
+}
