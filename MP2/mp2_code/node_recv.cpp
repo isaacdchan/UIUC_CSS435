@@ -1,35 +1,6 @@
-#include "imports.h"
-#include "log_utils.cpp"
-#include "packet.cpp"
-#include "resident.cpp"
+#include "node.h"
 
-extern int globalMyID;
-extern int globalSocketUDP;
-extern Resident dir[256];
-
-
-void broadcast(const char* buf, int length)
-{
-	for(int i=0; i<256; i++) {
-		if(i != globalMyID) {
-			dir[i].send(buf, length);
-		}
-	}
-}
-
-void* broadcastHeartbeat(void* unusedParam)
-{
-	struct timespec sleepFor;
-	sleepFor.tv_sec = 0;
-	sleepFor.tv_nsec = 300 * 1000 * 1000; //300 ms
-	while(1)
-	{
-		broadcast("BABUMP", 7);
-		nanosleep(&sleepFor, 0);
-	}
-}
-
-void* monitorResidentsHealth(void* unusedParam)
+void Node::monitorResidentsHealth()
 {
 	timeval lastHeartbeat, currTime;
 	while (1) {
@@ -39,7 +10,7 @@ void* monitorResidentsHealth(void* unusedParam)
 	}
 }
 
-void* listenForMessages(void* unusedParam)
+void Node::listenForMessages()
 {
 	char fromAddr[100];
 	struct sockaddr_in theirAddr;

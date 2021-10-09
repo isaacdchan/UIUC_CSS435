@@ -19,7 +19,8 @@ struct Resident
 	void send(const char* buf, int length);
 };
 
-void Resident::checkHealth(timeval currTime) {
+void Resident::checkHealth(timeval currTime)
+{
 	int i;
 	timeval lastHeartbeat;
 	time_t then, now, diff;
@@ -34,12 +35,14 @@ void Resident::checkHealth(timeval currTime) {
 	}
 }
 
-void Resident::recordHeartbeat() {
+void Resident::recordHeartbeat()
+{
 	gettimeofday(&lastHeartbeat, 0);
 	edgeIsActive = true;
 }
 
-void Resident::send(const char* buf, int length) {
+void Resident::send(const char* buf, int length)
+{
 	sendto(globalSocketUDP, buf, length, 0,
 	(struct sockaddr*)&sockaddr, sizeof(sockaddr));
 }
