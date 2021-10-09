@@ -10,12 +10,6 @@ int main(int argc, char** argv)
 	}
 	
 	Node node = Node(atoi(argv[1]), argv[2]);
-	
-	// constantly checks if a neighbor's most recent heartbeat is older than threshold
-	pthread_t announcerThread;
-	pthread_t listenerThread;
-	pthread_t neighborHealthThread; 
-
 
 	thread announcerThread(&Node::broadcastHeartbeat, &node);
 	thread listenerThread(&Node::listenForMessages, &node);
