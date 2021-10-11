@@ -1,10 +1,13 @@
-#include "logger.h"
-
+#include "header_files/logger.h"
 
 Logger::Logger(int id, string logFile)
 {
 	id = id;
 	file.open(logFile);
+}
+Logger::Logger()
+{
+	id = -1;
 }
 
 void Logger::add()

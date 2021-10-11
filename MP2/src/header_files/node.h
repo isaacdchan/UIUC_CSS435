@@ -5,9 +5,6 @@
 #include "packet.h"
 #include "logger.h"
 
-#include "file_utils.cpp"
-
-
 struct Node
 {
 	int id;

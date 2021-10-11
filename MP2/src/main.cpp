@@ -1,4 +1,4 @@
-#include "node.h"
+#include "header_files/node.h"
 
 int main(int argc, char** argv)
 {

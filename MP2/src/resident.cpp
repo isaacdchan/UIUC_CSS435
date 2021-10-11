@@ -1,8 +1,14 @@
-#include "resident.h"
+#include "header_files/resident.h"
 
-Resident::Resident(int _id, int _udpSocket) {
+Resident::Resident(int _id, int _udpSocket)
+{
 	id = _id;
 	udpSocket = _udpSocket;
+}
+
+Resident::Resident()
+{
+	id = -1;
 }
 
 bool Resident::checkHealth(timeval currTime)
