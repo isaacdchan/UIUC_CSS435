@@ -10,8 +10,9 @@ struct Resident
 	int udpSocket;
 	timeval lastHeartbeat;
 	sockaddr_in sockaddr;
-	string path;
+	// string path; 
 	int pathCost;
+	int nextHop;
 	bool edgeIsActive;
 	int edgeCost;
 

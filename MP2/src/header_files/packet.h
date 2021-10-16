@@ -1,20 +1,13 @@
 #pragma once
 
 #include "imports.h"
-#include "resident.h"
-#include "logger.h"
+#include "node.h"
 
 struct Packet
 {
-	Resident* owner;
-	Logger* logger;
+	int src; // who originated the message (can be manager)
 	string op;
-	int src;
-	int dest;
-	int nextHop;
-	string contents;
+	short int dest;
 
-	Packet(Resident* _owner, Logger* _logger, unsigned char* recvBuf);
-	Packet();
-	void execute();
+	Packet(int src, Node* node, int bytesRecvd, unsigned char packet[]);
 };

@@ -8,7 +8,9 @@
 		"iostream": "c",
 		"bitset": "cpp",
 		"cstring": "cpp",
-		"iosfwd": "cpp"
+		"iosfwd": "cpp",
+		"ostream": "cpp",
+		"new": "cpp"
 	},
 	"C_Cpp.errorSquiggles": "Enabled"
 }

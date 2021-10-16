@@ -8,9 +8,15 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 	
-	Node node = Node(atoi(argv[1]), argv[2], argv[3]);
+	Node* node = new Node(atoi(argv[1]), argv[2], argv[3]);
 
-	thread announcerThread(&Node::broadcastHeartbeat, &node);
-	thread listenerThread(&Node::listenForMessages, &node);
-	thread neighborHealthThread(&Node::monitorResidentsHealth, &node);
+	thread announcerThread(&Node::broadcastHeartbeat, node);
+	thread listenerThread(&Node::listenForMessages, node);
+	thread neighborHealthThread(&Node::monitorResidentsHealth, node);
+
+	announcerThread.join();
+	listenerThread.join();
+	neighborHealthThread.join();
+
+	delete node;
 }

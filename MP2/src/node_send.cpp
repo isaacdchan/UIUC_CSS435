@@ -2,9 +2,9 @@
 
 void Node::broadcast(const char* buf, int length)
 {
-	for(int i=0; i<256; i++) {
+	for(int i=0; i<numResidents; i++) {
 		if(i != id) {
-			dir[i].send(buf, length);
+			dir[i]->send(buf, length);
 		}
 	}
 }
@@ -21,24 +21,24 @@ void Node::broadcastHeartbeat()
 	}
 }
 
-void Node::advertiseEdgeCosts()
+void Node::advertisePathCosts()
 {
 	stringstream ss;
 	string strID = to_string(id);
-	for (int neighbor=0; neighbor<256; neighbor++)
+	short int no_dest;
+	int no_newCost;
+	// for each neighbor, advertise your edge costs to all other neighbors
+	// advertise distance to self is 0
+	for (int i=0; i<numResidents; i++)
 	{
-		if (dir[neighbor].edgeIsActive) // if neighbor
-		{
-			for (int resident=0; resident<256; resident++)
-			{
-				if (dir[resident].pathCost != -1) // there is a path to resident
-				{
-					ss << "route|" << id << "|" << resident << "|" << dir[resident].pathCost << strID;
-					dir[neighbor].send(ss.str().c_str(), ss.str().size());
-				}
-			}
-		}
-	}
+		short int no_dest = htons(i);
+		no_newCost = htonl(dir[i]->edgeCost);
+		char sendBuf[4+sizeof(short int)+sizeof(int)];
 
+		strcpy(sendBuf, "path");
+		memcpy(sendBuf+4, &no_dest, 2);
+		memcpy(sendBuf+6, &no_newCost, 4);
+		dir[i]->send(sendBuf, 10);
+	}
 }
  

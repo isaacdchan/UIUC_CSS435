@@ -16,9 +16,15 @@ void Logger::add()
 	ss.clear();
 }
 
-void Logger::addCostUpdate(int otherNode, int updatedCost)
+void Logger::addEdgeCostUpdate(int otherNode, int updatedCost)
 {
 	ss << "edge cost to " << otherNode << " updated to " << updatedCost;
+	add();
+}
+
+void Logger::addPathCostUpdate(int dest, int nextHop, int updatedCost)
+{
+	ss << "path cost to " << dest << " updated to " << updatedCost << " through " << nextHop; 
 	add();
 }
 

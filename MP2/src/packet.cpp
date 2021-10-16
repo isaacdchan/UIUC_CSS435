@@ -15,50 +15,73 @@ vector<string> tokenize(string str, string delim)
 	return tokens;
 }
 
-Packet::Packet(Resident* _owner, Logger* _logger, unsigned char* recvBuf)
+Packet::Packet(int _src, Node* node, int bytesRecvd, unsigned char packet[])
 {
-	owner = _owner;
-	logger = _logger;
-	string str = string((char*) recvBuf);
+	src = _src;
 
-	// if(!strncmp(recvBuf, "send", 4))
-	if(str.substr(0, 4) == "send")
-	{
-		op = "send";
-		src = owner->id;
-		// dest = extractDestNode(str)
-		// contents = extractContents()
-	} else if (str.substr(0, 4) == "cost")
-	{
-		op = "cost";
-		src = owner->id;
-		// dest = extractDestNode(str)
-		// contents = extractContents()
-	} else
-	{
-		vector<string> tokens = tokenize(str, "|");
-		op = tokens[0];
-		src = stoi(tokens[1]);
-		dest = stoi(tokens[2]);
-		nextHop = stoi(tokens[3]);
-		contents = stoi(tokens[4]);
-	}
-}
+	char char_op[5];
+	memcpy(char_op, packet, 4);
+	char_op[4] = '\0';
+	string op = string(char_op);
 
-void Packet::execute() {
-	if (op == "cost")
+	memcpy(&dest, packet + 4, 2);
+	dest = ntohs(dest);
+
+	if (op == "cost") 
 	{
-		int updatedCost = stoi(contents);
-		owner->edgeCost = updatedCost;
-		logger->addCostUpdate(dest, updatedCost);
-	} else if (op == "recv")
+		int selfToDestEdgeCost;
+		memcpy(&selfToDestEdgeCost, packet + 6, 4);
+		selfToDestEdgeCost = ntohl(selfToDestEdgeCost);
+		cout << op << " | " << dest << " | " << selfToDestEdgeCost << endl;
+
+		node->dir[dest]->edgeCost = selfToDestEdgeCost;
+		node->logger->addEdgeCostUpdate(dest, selfToDestEdgeCost);
+
+		// update best path
+	} else if (op == "path")
 	{
-		logger->addRecv(dest, contents);
+		int srcToDestCost;
+		memcpy(&srcToDestCost, packet + 6, 4);
+		srcToDestCost = ntohl(srcToDestCost);
+
+		int currBestCost = node->dir[dest]->pathCost;
+		int selfToSrcEdgeCost = node->dir[src]->edgeCost; // assume edge is live
+		int candidatePathCost = selfToSrcEdgeCost + srcToDestCost;
+
+		// handle reachable vs. unreachable use case
+		if (candidatePathCost > currBestCost)
+		{
+			// ignore
+		} else if (candidatePathCost < currBestCost)
+		{
+			node->dir[dest]->pathCost = candidatePathCost;
+			node->dir[dest]->nextHop = src;
+			node->logger->addPathCostUpdate(dest, src, candidatePathCost);
+
+			// broadcast to neighbors that they have a new cheapest path from self to dest
+		} else  // tiebreak based on lower value
+		{
+			int currNextHop = node->dir[dest]->nextHop;
+			if (src < currNextHop)
+			{
+				node->dir[dest]->pathCost = candidatePathCost;
+				node->dir[dest]->nextHop = src;
+				node->logger->addPathCostUpdate(dest, src, candidatePathCost);
+				// broadcast to neighbors that they have a new cheapest path from self to dest
+			}
+		}
 	} else if (op == "send")
 	{
+			int messageLength = bytesRecvd - 6;
+			char message[messageLength];
+			memcpy(&message, packet + 6, messageLength);
+			message[messageLength] = '\0';
 
-	} else if (op == "forward") {
+			Resident* destResident = node->dir[dest];
+			int nextHop = destResident->nextHop;
+			Resident* nextHopResident = node->dir[nextHop];
 
+			// check whether the edge is live
+			// could have gone down between last path update
 	}
-	// handle reachable vs. unreachable use case
 }

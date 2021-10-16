@@ -9,7 +9,8 @@ struct Logger {
 	Logger(int testId, string logFile);
 	Logger();
 	void add();
-	void addCostUpdate(int otherNode, int updatedCost);
+	void addEdgeCostUpdate(int otherNode, int updatedCost);
+	void addPathCostUpdate(int dest, int nextHop, int updatedCost);
 	void addEdgeExpired(int otherNode);
 	void addRecv(int othernode, string msg);
 };
