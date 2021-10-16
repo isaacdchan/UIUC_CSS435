@@ -15,73 +15,91 @@ vector<string> tokenize(string str, string delim)
 	return tokens;
 }
 
-Packet::Packet(int _src, Node* node, int bytesRecvd, unsigned char packet[])
+Packet::Packet(int _src, Node* _node, int _bytesRecvd, unsigned char* _rawPacket)
+	: src(_src), node(_node), bytesRecvd(_bytesRecvd), rawPacket(_rawPacket)
 {
-	src = _src;
-
 	char char_op[5];
-	memcpy(char_op, packet, 4);
+	memcpy(char_op, rawPacket, 4);
 	char_op[4] = '\0';
 	string op = string(char_op);
 
-	memcpy(&dest, packet + 4, 2);
+	memcpy(&dest, rawPacket + 4, 2);
 	dest = ntohs(dest);
 
-	if (op == "cost") 
+	if (op == "cost") { handleCostOP();	}
+	else if (op == "path"){ handlePathOP(); }
+	else if (op == "send") { handleSendOP(); }
+	else { // unknown op }
+}
+
+void Packet::handleCostOP()
+{
+	int selfToDestEdgeCost;
+	memcpy(&selfToDestEdgeCost, rawPacket + 6, 4);
+	selfToDestEdgeCost = ntohl(selfToDestEdgeCost);
+	cout << op << " | " << dest << " | " << selfToDestEdgeCost << endl;
+
+	node->dir[dest]->edgeCost = selfToDestEdgeCost;
+	node->logger->addEdgeCostUpdate(dest, selfToDestEdgeCost);
+
+	// update best path
+}
+void Packet::handlePathOP()
+{
+	int srcToDestCost;
+	memcpy(&srcToDestCost, rawPacket + 6, 4);
+	srcToDestCost = ntohl(srcToDestCost);
+
+	int currBestCost = node->dir[dest]->pathCost;
+	int selfToSrcEdgeCost = node->dir[src]->edgeCost; // assume edge is live
+	int candidatePathCost = selfToSrcEdgeCost + srcToDestCost;
+
+	if (candidatePathCost < currBestCost)
 	{
-		int selfToDestEdgeCost;
-		memcpy(&selfToDestEdgeCost, packet + 6, 4);
-		selfToDestEdgeCost = ntohl(selfToDestEdgeCost);
-		cout << op << " | " << dest << " | " << selfToDestEdgeCost << endl;
-
-		node->dir[dest]->edgeCost = selfToDestEdgeCost;
-		node->logger->addEdgeCostUpdate(dest, selfToDestEdgeCost);
-
-		// update best path
-	} else if (op == "path")
+		node->updatePath(dest, src, candidatePathCost);
+	} if (candidatePathCost == currBestCost)  // tiebreak based on lower value
 	{
-		int srcToDestCost;
-		memcpy(&srcToDestCost, packet + 6, 4);
-		srcToDestCost = ntohl(srcToDestCost);
-
-		int currBestCost = node->dir[dest]->pathCost;
-		int selfToSrcEdgeCost = node->dir[src]->edgeCost; // assume edge is live
-		int candidatePathCost = selfToSrcEdgeCost + srcToDestCost;
-
-		// handle reachable vs. unreachable use case
-		if (candidatePathCost > currBestCost)
+		int currNextHop = node->dir[dest]->nextHop;
+		if (src < currNextHop)
 		{
-			// ignore
-		} else if (candidatePathCost < currBestCost)
-		{
-			node->dir[dest]->pathCost = candidatePathCost;
-			node->dir[dest]->nextHop = src;
-			node->logger->addPathCostUpdate(dest, src, candidatePathCost);
-
-			// broadcast to neighbors that they have a new cheapest path from self to dest
-		} else  // tiebreak based on lower value
-		{
-			int currNextHop = node->dir[dest]->nextHop;
-			if (src < currNextHop)
-			{
-				node->dir[dest]->pathCost = candidatePathCost;
-				node->dir[dest]->nextHop = src;
-				node->logger->addPathCostUpdate(dest, src, candidatePathCost);
-				// broadcast to neighbors that they have a new cheapest path from self to dest
-			}
+			node->updatePath(dest, src, candidatePathCost);
 		}
-	} else if (op == "send")
-	{
-			int messageLength = bytesRecvd - 6;
-			char message[messageLength];
-			memcpy(&message, packet + 6, messageLength);
-			message[messageLength] = '\0';
-
-			Resident* destResident = node->dir[dest];
-			int nextHop = destResident->nextHop;
-			Resident* nextHopResident = node->dir[nextHop];
-
-			// check whether the edge is live
-			// could have gone down between last path update
 	}
+}
+void Packet::handleSend()
+{
+	// I AM INTENDED TARGET
+	if (dest == node->id)
+	{
+		int prevHop; // who forwarded it to me
+		int src; // original sender (could be same as above)
+		string message; // extract message
+		node->logger->addRecv(src, message);
+	}
+	else
+	{
+		// send4hello
+		int messageLength = bytesRecvd - 6;
+		char message[messageLength];
+		memcpy(&message, rawPacket + 6, messageLength);
+		message[messageLength] = '\0';
+
+		Resident* destResident = node->dir[dest];
+		int nextHop = destResident->nextHop;
+		Resident* nextHopResident = node->dir[nextHop];
+
+		// could have gone down between last path update
+		if (!nextHopResident->edgeIsActive)
+		{
+			// find another nextHop
+		}
+		if (src == -1) //manager
+		{
+			node->logger->addSend(dest, message);
+		} else 
+		{
+			node->logger->addForward(src, dest, message);
+		}
+	}
+
 }

@@ -43,32 +43,32 @@ void Node::initDir(int udpSocket)
 {
 	for(int i=0; i<numResidents; i++)
 	{
-		if (i != id)
+		dir[i] = new Resident(i, udpSocket);
+		// init last heartbeat to curr time
+		gettimeofday(&(dir[i]->lastHeartbeat), 0);
+
+		if (i == id)
 		{
-			dir[i] = new Resident(i, udpSocket);
-			// init last heartbeat to curr time
-			gettimeofday(&(dir[i]->lastHeartbeat), 0);
+			dir[i]->pathCost = 0;
+			dir[i]->edgeCost = 0;
+		} else
+		{
 			dir[i]->pathCost = INT_MAX;
-			
-			char tempaddr[100];
-			sprintf(tempaddr, "10.1.1.%d", i);
-			memset(&dir[i]->sockaddr, 0, sizeof(dir[i]->sockaddr));
-			dir[i]->sockaddr.sin_family = AF_INET;
-			dir[i]->sockaddr.sin_port = htons(7777);
-			inet_pton(AF_INET, tempaddr, &dir[i]->sockaddr.sin_addr);
-			if (i == id)
-				dir[i]->edgeCost = 1;
-			else
-				dir[i]->edgeCost = 0;
+			dir[i]->edgeCost = INT_MAX;
 		}
+		
+		char tempaddr[100];
+		sprintf(tempaddr, "10.1.1.%d", i);
+		memset(&dir[i]->sockaddr, 0, sizeof(dir[i]->sockaddr));
+		dir[i]->sockaddr.sin_family = AF_INET;
+		dir[i]->sockaddr.sin_port = htons(7777);
+		inet_pton(AF_INET, tempaddr, &dir[i]->sockaddr.sin_addr);
 	}
 }
 
 Node::Node(int _id, string costsFile, string logFile)
+	: id(_id), logger(new Logger(id, logFile))
 {
-	id = _id;
-	logger = new Logger(id, logFile);
-
 	if((udpSocket=socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{
 		perror("socket");
@@ -86,6 +86,8 @@ Node::Node(int _id, string costsFile, string logFile)
 	bindAddr.sin_port = htons(7777);
 	inet_pton(AF_INET, myAddr, &bindAddr.sin_addr);
 	if(bind(udpSocket, (struct sockaddr*)&bindAddr, sizeof(struct sockaddr_in)) < 0)
+
+	broadcastUpdatedPath(id);
 	{
 		perror("bind");
 		close(udpSocket);
@@ -98,9 +100,6 @@ Node::~Node() {
 
 	for(int i=0; i<numResidents; i++)
 	{
-		if (i != id)
-		{
-			delete dir[i];
-		}
+		delete dir[i];
 	}
 }

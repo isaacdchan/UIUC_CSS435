@@ -54,3 +54,12 @@ void Node::listenForMessages()
 	}
 	close(udpSocket);
 }
+
+void Node::updatePath(int dest, int nextHop, int candidatePathCost)
+{
+	dir[dest]->pathCost = candidatePathCost;
+	dir[dest]->nextHop = nextHop;
+	logger->addPathCostUpdate(dest, nextHop, candidatePathCost);
+	// broadcast to neighbors that they have a new cheapest path from self to dest
+	broadcastUpdatedPath(dest);
+}

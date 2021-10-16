@@ -30,12 +30,22 @@ void Logger::addPathCostUpdate(int dest, int nextHop, int updatedCost)
 
 void Logger::addEdgeExpired(int otherNode)
 {
-	ss << "edge from " << otherNode << " expired";
+	ss << "edge from node " << otherNode << " expired";
 	add();
 }
 
-void Logger::addRecv(int othernode, string msg)
+void Logger::addSend(int dest, string msg)
 {
-	ss << "received msg from node" << othernode << ": " << msg;
+	ss << "sending msg to node " << dest << ": " << msg;
+	add();
+}
+void Logger::addForward(int prevHop, int dest, string msg)
+{
+	ss << "forwarding msg from node" << prevHop << " to node " << dest << ": " << msg;
+	add();
+}
+void Logger::addRecv(int src, string msg)
+{
+	ss << "received msg from node" << src << ": " << msg;
 	add();
 }

@@ -12,5 +12,7 @@ struct Logger {
 	void addEdgeCostUpdate(int otherNode, int updatedCost);
 	void addPathCostUpdate(int dest, int nextHop, int updatedCost);
 	void addEdgeExpired(int otherNode);
-	void addRecv(int othernode, string msg);
+	void addSend(int src, string msg);
+	void addForward(int prevHop, int dest, string msg);
+	void addRecv(int dest, string msg);
 };

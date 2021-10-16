@@ -5,15 +5,14 @@
 #include "packet.h"
 #include "logger.h"
 
-#include "file_utils.cpp"
-
 
 struct Node
 {
 	int id;
-	Logger logger;
+	static const int numResidents = 256;
 	int udpSocket;
-	Resident dir[256];
+	Logger* logger;
+	Resident* dir[numResidents];
 
 	// init
 	Node(int id, string costsFile, string logFile);
@@ -24,9 +23,11 @@ struct Node
 	// send
 	void broadcast(const char* buf, int length);
 	void broadcastHeartbeat();
-	void advertiseEdgeCosts();
+	void broadcastEdges();
+	void broadcastUpdatedPath(int dest);
 
 	// recv
 	void monitorResidentsHealth();
 	void listenForMessages();
+	void updatePath(int dest, int nextHop, int candidatePathCost);
 };

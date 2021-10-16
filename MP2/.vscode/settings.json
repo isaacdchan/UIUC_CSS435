@@ -10,7 +10,8 @@
 		"cstring": "cpp",
 		"iosfwd": "cpp",
 		"ostream": "cpp",
-		"new": "cpp"
+		"new": "cpp",
+		"string_view": "cpp"
 	},
 	"C_Cpp.errorSquiggles": "Enabled"
 }

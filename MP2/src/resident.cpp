@@ -1,10 +1,7 @@
 #include "header_files/resident.h"
 
 Resident::Resident(int _id, int _udpSocket)
-{
-	id = _id;
-	udpSocket = _udpSocket;
-}
+	: id(id), udpSocket(_udpSocket) {}
 
 Resident::Resident()
 {
