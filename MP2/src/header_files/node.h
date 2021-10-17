@@ -2,7 +2,6 @@
 
 #include "imports.h"
 #include "resident.h"
-#include "packet.h"
 #include "logger.h"
 
 
@@ -16,6 +15,7 @@ struct Node
 
 	// init
 	Node(int id, string costsFile, string logFile);
+	~Node();
 	void initDir(int udpSocket);
 	void initCosts(string costsFile);
 	void initLogFile(string logFile);
@@ -29,5 +29,5 @@ struct Node
 	// recv
 	void monitorResidentsHealth();
 	void listenForMessages();
-	void updatePath(int dest, int nextHop, int candidatePathCost);
+	void updatePath(int dest, int nextHop, int newPathCost);
 };

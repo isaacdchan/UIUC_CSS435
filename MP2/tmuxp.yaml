@@ -1,0 +1,19 @@
+session_name: 4-pane-split
+windows:
+  - window_name: dev window
+    layout: tiled
+    shell_command_before:
+      - cd ~/Documents/UIUC/CS435/MP2
+    panes:
+      - shell_command:
+          - clear
+          - bin/node 0 example_topology/testinitcosts0 logs/test0.log
+      - shell_command:
+          - clear
+          - bin/node 1 example_topology/testinitcosts1 logs/test1.log
+      - shell_command:
+          - clear
+          - bin/node 2 example_topology/testinitcosts2 logs/test2.log
+      - shell_command:
+          - clear
+          - bin/node 3 example_topology/testinitcosts3 logs/test3.log

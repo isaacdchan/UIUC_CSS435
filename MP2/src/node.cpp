@@ -86,13 +86,13 @@ Node::Node(int _id, string costsFile, string logFile)
 	bindAddr.sin_port = htons(7777);
 	inet_pton(AF_INET, myAddr, &bindAddr.sin_addr);
 	if(bind(udpSocket, (struct sockaddr*)&bindAddr, sizeof(struct sockaddr_in)) < 0)
-
-	broadcastUpdatedPath(id);
 	{
 		perror("bind");
 		close(udpSocket);
 		exit(1);
 	}
+
+	broadcastUpdatedPath(this->id);
 }
 
 Node::~Node() {

@@ -9,7 +9,12 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${fileDirname}/${fileBasenameNoExtension}",
-			"args": [],
+			"args": [
+				"-pthread",
+				"src/*.cpp",
+				"-o",
+				"out/node.o"
+			],
 			"stopAtEntry": false,
 			"cwd": "${fileDirname}",
 			"environment": [],

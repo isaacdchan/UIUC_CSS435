@@ -1,18 +1,14 @@
 #include "header_files/packet.h"
 
-vector<string> tokenize(string str, string delim)
-{
-	vector<string> tokens;
-	string token;
-	size_t pos = 0;
-	while ((pos = str.find(delim)) != string::npos)
-	{
-		token = str.substr(0, pos);
-		tokens.push_back(token);
-		str.erase(0, pos + delim.length());
-	}
 
-	return tokens;
+string extractMessage(int bytesRecvd, unsigned char* rawPacket)
+{
+	int messageLength = bytesRecvd - 6;
+	char message[messageLength];
+	memcpy(&message, rawPacket + 6, messageLength);
+	message[messageLength] = '\0';
+
+	return string(message);
 }
 
 Packet::Packet(int _src, Node* _node, int _bytesRecvd, unsigned char* _rawPacket)
@@ -21,28 +17,41 @@ Packet::Packet(int _src, Node* _node, int _bytesRecvd, unsigned char* _rawPacket
 	char char_op[5];
 	memcpy(char_op, rawPacket, 4);
 	char_op[4] = '\0';
-	string op = string(char_op);
+	op = string(char_op);
 
 	memcpy(&dest, rawPacket + 4, 2);
 	dest = ntohs(dest);
 
 	if (op == "cost") { handleCostOP();	}
-	else if (op == "path"){ handlePathOP(); }
-	else if (op == "send") { handleSendOP(); }
-	else { // unknown op }
+	if (op == "path") { handlePathOP(); }
+	if (op == "send") { handleSendOP(); }
 }
 
 void Packet::handleCostOP()
 {
-	int selfToDestEdgeCost;
-	memcpy(&selfToDestEdgeCost, rawPacket + 6, 4);
-	selfToDestEdgeCost = ntohl(selfToDestEdgeCost);
-	cout << op << " | " << dest << " | " << selfToDestEdgeCost << endl;
+	int newEdgeCost;
+	memcpy(&newEdgeCost, rawPacket + 6, 4);
+	newEdgeCost = ntohl(newEdgeCost);
 
-	node->dir[dest]->edgeCost = selfToDestEdgeCost;
-	node->logger->addEdgeCostUpdate(dest, selfToDestEdgeCost);
+	Resident* destResident = node->dir[dest];
 
-	// update best path
+	int oldEdgeCost = destResident->edgeCost;
+	int edgeDiff = oldEdgeCost - newEdgeCost;
+	destResident->edgeCost = newEdgeCost;
+	node->logger->addEdgeCostUpdate(dest, newEdgeCost);
+
+	for (Resident* r: node->dir)
+	{
+		// if the path from node to r went through dest
+		// the shortest path cost must be adjusted (and potentially changed)
+		if (r->nextHop == dest)
+		{
+			int oldPathCost = r->pathCost;
+			int newPathCost = oldPathCost - edgeDiff;
+			// nextHop remains the same for now
+			node->updatePath(dest, destResident->nextHop, newPathCost);
+		}
+	}
 }
 void Packet::handlePathOP()
 {
@@ -66,7 +75,7 @@ void Packet::handlePathOP()
 		}
 	}
 }
-void Packet::handleSend()
+void Packet::handleSendOP()
 {
 	// I AM INTENDED TARGET
 	if (dest == node->id)
@@ -79,10 +88,7 @@ void Packet::handleSend()
 	else
 	{
 		// send4hello
-		int messageLength = bytesRecvd - 6;
-		char message[messageLength];
-		memcpy(&message, rawPacket + 6, messageLength);
-		message[messageLength] = '\0';
+		string message = extractMessage(bytesRecvd, rawPacket);
 
 		Resident* destResident = node->dir[dest];
 		int nextHop = destResident->nextHop;
@@ -91,8 +97,11 @@ void Packet::handleSend()
 		// could have gone down between last path update
 		if (!nextHopResident->edgeIsActive)
 		{
-			// find another nextHop
+			// how to find another nextHop? ask neighbors
 		}
+
+		// final logging
+		// might have to log unreachable
 		if (src == -1) //manager
 		{
 			node->logger->addSend(dest, message);
@@ -101,5 +110,4 @@ void Packet::handleSend()
 			node->logger->addForward(src, dest, message);
 		}
 	}
-
 }

@@ -12,7 +12,6 @@ struct Packet
 	int bytesRecvd;
 	unsigned char* rawPacket;
 
-
 	Packet(int src, Node* node, int bytesRecvd, unsigned char* rawPacket);
 	void handleSendOP();
 	void handlePathOP();

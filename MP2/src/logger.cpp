@@ -1,19 +1,17 @@
 #include "header_files/logger.h"
 
-Logger::Logger(int id, string logFile)
+Logger::Logger(int _id, string _logFile) 
+	: id(_id), logFile(_logFile)
 {
-	id = id;
-	file.open(logFile);
-}
-Logger::Logger()
-{
-	id = -1;
+	ofstream out;
+	out.open(logFile, ofstream::out | ofstream::trunc);
 }
 
 void Logger::add()
 {
-	file << ss.str() << "\n";
-	ss.clear();
+	ofstream out(logFile, ofstream::app);
+	out << ss.str() << endl;
+	ss.str("");
 }
 
 void Logger::addEdgeCostUpdate(int otherNode, int updatedCost)

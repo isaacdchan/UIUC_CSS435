@@ -3,11 +3,11 @@
 
 struct Logger {
 	int id;
+	string logFile;
 	stringstream ss;
-	ofstream file;
+	
 
 	Logger(int testId, string logFile);
-	Logger();
 	void add();
 	void addEdgeCostUpdate(int otherNode, int updatedCost);
 	void addPathCostUpdate(int dest, int nextHop, int updatedCost);

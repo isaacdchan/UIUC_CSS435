@@ -1,4 +1,5 @@
 #include "header_files/node.h"
+#include "header_files/packet.h"
 
 void Node::monitorResidentsHealth()
 {
@@ -55,11 +56,11 @@ void Node::listenForMessages()
 	close(udpSocket);
 }
 
-void Node::updatePath(int dest, int nextHop, int candidatePathCost)
+void Node::updatePath(int dest, int nextHop, int newPathCost)
 {
-	dir[dest]->pathCost = candidatePathCost;
+	dir[dest]->pathCost = newPathCost;
 	dir[dest]->nextHop = nextHop;
-	logger->addPathCostUpdate(dest, nextHop, candidatePathCost);
+	logger->addPathCostUpdate(dest, nextHop, newPathCost);
 	// broadcast to neighbors that they have a new cheapest path from self to dest
 	broadcastUpdatedPath(dest);
 }
