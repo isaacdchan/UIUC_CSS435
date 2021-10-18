@@ -2,7 +2,7 @@
 
 #include "imports.h"
 
-#define EXPIRATION_THRESHOLD 100
+#define EXPIRATION_THRESHOLD 600
 
 struct Resident
 {
@@ -21,5 +21,5 @@ struct Resident
 
 	bool checkHealth(timeval currTime);
 	void recordHeartbeat();
-	void send(const char* buf, int length);
+	void send(unsigned char* buf, int length);
 };

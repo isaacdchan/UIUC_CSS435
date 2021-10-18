@@ -9,16 +9,15 @@ import shutil
 import sys
 
 directory_results = "results/"
-manager_file = "./manager/manager_send"
-maketopology_file = "manager/make_topology.pl"
-network_name = "enps03" #Replace this with the name of the network you see with ifconfig command in the terminal
-program_name = "./ls_router" #Replace this with your program name
+manager_file = "./bin/manager"
+maketopology_file = "grading_helper/make_topology.pl"
+network_name = "eth0" #Replace this with the name of the network you see with ifconfig command in the terminal
+program_name = "./bin/node" #Replace this with your program name
 
 def initialize_results():
 	if (os.path.exists(directory_results)):
 		shutil.rmtree(directory_results)
 	os.makedirs(directory_results)
-
 
 def send(src,dest,message):
 	subprocess.call([manager_file,str(src),"send",str(dest),message])

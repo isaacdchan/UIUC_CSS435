@@ -17,15 +17,9 @@ void Node::broadcastHeartbeat()
 	sleepFor.tv_nsec = 300 * 1000 * 1000; //300 ms
 	while(1)
 	{
-		Node::broadcast("BABUMP", 7);
+		broadcastUpdatedPath(this->id);
 		nanosleep(&sleepFor, 0);
 	}
-}
-
-void Node::broadcastEdges()
-{
-	// for each neighbor, advertise your edge costs to all other neighbors
-	// advertise distance to self is 0
 }
 
 void Node::broadcastUpdatedPath(int dest)

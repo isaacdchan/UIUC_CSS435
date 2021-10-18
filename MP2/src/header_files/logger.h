@@ -11,6 +11,7 @@ struct Logger {
 	void add();
 	void addEdgeCostUpdate(int otherNode, int updatedCost);
 	void addPathCostUpdate(int dest, int nextHop, int updatedCost);
+	void addEdgeRevived(int otherNode);
 	void addEdgeExpired(int otherNode);
 	void addSend(int src, string msg);
 	void addForward(int prevHop, int dest, string msg);

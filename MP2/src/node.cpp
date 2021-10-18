@@ -44,17 +44,12 @@ void Node::initDir(int udpSocket)
 	for(int i=0; i<numResidents; i++)
 	{
 		dir[i] = new Resident(i, udpSocket);
-		// init last heartbeat to curr time
-		gettimeofday(&(dir[i]->lastHeartbeat), 0);
 
 		if (i == id)
 		{
 			dir[i]->pathCost = 0;
 			dir[i]->edgeCost = 0;
-		} else
-		{
-			dir[i]->pathCost = INT_MAX;
-			dir[i]->edgeCost = INT_MAX;
+			dir[i]->nextHop = i;
 		}
 		
 		char tempaddr[100];
@@ -91,8 +86,6 @@ Node::Node(int _id, string costsFile, string logFile)
 		close(udpSocket);
 		exit(1);
 	}
-
-	broadcastUpdatedPath(this->id);
 }
 
 Node::~Node() {

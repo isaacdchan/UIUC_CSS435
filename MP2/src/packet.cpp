@@ -22,6 +22,8 @@ Packet::Packet(int _src, Node* _node, int _bytesRecvd, unsigned char* _rawPacket
 	memcpy(&dest, rawPacket + 4, 2);
 	dest = ntohs(dest);
 
+	// cout << op << " | " << src  << " | " << dest << endl;
+
 	if (op == "cost") { handleCostOP();	}
 	if (op == "path") { handlePathOP(); }
 	if (op == "send") { handleSendOP(); }
@@ -63,6 +65,7 @@ void Packet::handlePathOP()
 	int selfToSrcEdgeCost = node->dir[src]->edgeCost; // assume edge is live
 	int candidatePathCost = selfToSrcEdgeCost + srcToDestCost;
 
+	// cout << currBestCost << " | " << candidatePathCost << endl;
 	if (candidatePathCost < currBestCost)
 	{
 		node->updatePath(dest, src, candidatePathCost);
@@ -97,8 +100,13 @@ void Packet::handleSendOP()
 		// could have gone down between last path update
 		if (!nextHopResident->edgeIsActive)
 		{
-			// how to find another nextHop? ask neighbors
+			// nextHop is by default shortest edge?
+			// how to find another nextHop? ask closest neighbor
+		} else 
+		{
+			nextHopResident->send(rawPacket, bytesRecvd);
 		}
+
 
 		// final logging
 		// might have to log unreachable
