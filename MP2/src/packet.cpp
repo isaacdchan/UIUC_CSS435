@@ -61,20 +61,32 @@ void Packet::handlePathOP()
 	memcpy(&srcToDestCost, rawPacket + 6, 4);
 	srcToDestCost = ntohl(srcToDestCost);
 
-	int currBestCost = node->dir[dest]->pathCost;
+	int currPathCost = node->dir[dest]->pathCost;
+	// prevHop == src
 	int selfToSrcEdgeCost = node->dir[prevHop]->edgeCost; // assume edge is live
 	int candidatePathCost = selfToSrcEdgeCost + srcToDestCost;
 
-	// cout << currBestCost << " | " << candidatePathCost << endl;
-	if (candidatePathCost < currBestCost)
-	{
-		node->updatePath(dest, prevHop, candidatePathCost);
-	} if (candidatePathCost == currBestCost)  // tiebreak based on lower value
+	bool shouldUpdatePath = false;
+	if (candidatePathCost < currPathCost) { shouldUpdatePath = true; }
+	if (candidatePathCost == currPathCost)  // tiebreak based on lower value
 	{
 		int currNextHop = node->dir[dest]->nextHop;
-		if (prevHop < currNextHop)
+		if (prevHop < currNextHop) { shouldUpdatePath = true; }
+	}
+
+	if (shouldUpdatePath)
+	{
+		node->updatePath(dest, prevHop, candidatePathCost);
+		for (Resident* r: node->dir)
 		{
-			node->updatePath(dest, prevHop, candidatePathCost);
+			if (r->nextHop == dest)
+			{
+				int oldPathCostToR = r->pathCost;
+				int newPathCostToDest = node->dir[dest]->pathCost;
+				int costSaved = oldPathCostToR - newPathCostToDest;
+				int newPathCostToR = oldPathCostToR - costSaved;
+				node->updatePath(r->id, r->nextHop, newPathCostToR);
+			}
 		}
 	}
 }

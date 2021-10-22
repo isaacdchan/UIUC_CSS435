@@ -54,7 +54,7 @@ void Logger::addSend(int nextHop, int dest, string msg)
 {
 	if (verbose) 
 	{
-		ss << "sending msg to node" << dest << ": " << msg;
+		ss << "sending msg to node " << dest << " via nexthop " << nextHop << " message " << msg;
 	} else 
 	{
 		ss << "sending packet dest " << dest << " nexthop " << nextHop << " message " << msg;
@@ -66,7 +66,7 @@ void Logger::addForward(int src, int nextHop, int dest, string msg)
 {
 	if (verbose)
 	{
-		ss << "forwarding msg from node" << src << " to node" << dest << ": " << msg;
+		ss << "forwarding msg from node" << src << " via nextHop " << nextHop << " to node" << dest << ": " << msg;
 	} else
 	{
 		ss << "forward packet dest " << dest << " nexthop " << nextHop << " message " << msg;

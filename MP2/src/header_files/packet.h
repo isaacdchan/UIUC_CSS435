@@ -17,6 +17,8 @@ struct Packet
 
 	int extractSendSrc();
 	int findNewNextHop();
+	
+	void checkIfPathUpdateAffectsOtherPaths(int dest);
 
 	void handleSendOP();
 	void handlePathOP();

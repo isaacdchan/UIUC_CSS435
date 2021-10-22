@@ -1,6 +1,6 @@
 #include "header_files/node.h"
 
-#define VERBOSE false
+#define VERBOSE true
 
 tuple<int, int> parseLine(string line)
 {
