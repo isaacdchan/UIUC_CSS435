@@ -82,17 +82,8 @@ void Packet::handlePathOP()
 // send4hello | send42hello
 void Packet::handleSendOP()
 {
-	int src;
-	bool fromManager = false;
-	if (prevHop == -1)
-	{
-		src = -1;
-		fromManager = true;
-	} else
-	{
-		memcpy(&src, rawPacket + 6, nodeIdSize);
-		src = ntohs(src);
-	}
+	int src = extractSendSrc();
+	bool fromManager = (src == -1) ? true : false;
 	string message = extractMessage(bytesRecvd, rawPacket, fromManager);
 
 	if (dest == node->id)
@@ -105,39 +96,25 @@ void Packet::handleSendOP()
 	Resident* nextHopResident;
 	int nextHop = destResident->nextHop;
 
-	bool nextHopActive = true;
-	if (nextHop == -1)
-	{
-		nextHopActive = false;
-	} else
-	{
-		nextHopResident = node->dir[nextHop];
-		if (!nextHopResident->edgeIsActive) { nextHopActive = false; }
-	}
+	bool nextHopActive = (nextHop != -1) ? true : false;
+	nextHopResident = node->dir[nextHop];
+	nextHopActive = (nextHopResident->edgeIsActive) ? true : false;
 
 	// could have gone down between last path update
 	if (!nextHopActive)
 	{
-		int closestNeighbor = INT_MIN;
-		int cheapestEdge = INT_MAX;
-		for (Resident* r: node->dir)
-		{
-			// since it increments through dir, the smaller edge id will always win
-			if (r->edgeIsActive && r->edgeCost < cheapestEdge) 
-			{
-				closestNeighbor = r->id;
-				cheapestEdge = r->edgeCost;
-			}
-		}
+		int newNextHop = findNewNextHop();
 
-		if (closestNeighbor == INT_MIN) // no edges active
+		if (newNextHop == -1) // no edges active
 		{
 			node->logger->addUnreachable(src, dest);
 			return;
+		} else
+		{
+			// don't think need to broadcast ATM?
+			nextHopResident = node->dir[newNextHop];
+			
 		}
-
-		// don't think need to broadcast ATM?
-		nextHopResident = node->dir[closestNeighbor];
 	}
 	if (fromManager)
 	{
@@ -165,4 +142,33 @@ void Packet::handleSendOP()
 		nextHopResident->send(rawPacket, bytesRecvd);
 	}
 
+}
+
+int Packet::findNewNextHop() {
+	int closestNeighbor = -1;
+	int cheapestEdge = INT_MAX;
+	for (Resident* r: node->dir)
+	{
+		// since it increments through dir, the smaller edge id will always win
+		if (r->edgeIsActive && r->edgeCost < cheapestEdge) 
+		{
+			closestNeighbor = r->id;
+			cheapestEdge = r->edgeCost;
+		}
+	}
+
+	return closestNeighbor;
+}
+
+int Packet::extractSendSrc() {
+	int src;
+	if (prevHop == -1)
+	{
+		src = -1;
+	} else
+	{
+		memcpy(&src, rawPacket + 6, nodeIdSize);
+		src = ntohs(src);
+	}
+	return src;
 }

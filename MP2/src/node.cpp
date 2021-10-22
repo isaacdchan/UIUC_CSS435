@@ -1,5 +1,7 @@
 #include "header_files/node.h"
 
+#define VERBOSE false
+
 tuple<int, int> parseLine(string line)
 {
 	stringstream ss(line);
@@ -62,7 +64,7 @@ void Node::initDir(int udpSocket)
 }
 
 Node::Node(short int _id, string costsFile, string logFile)
-	: id(_id), logger(new Logger(id, logFile, false))
+	: id(_id), logger(new Logger(id, logFile, VERBOSE))
 {
 	if((udpSocket=socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{

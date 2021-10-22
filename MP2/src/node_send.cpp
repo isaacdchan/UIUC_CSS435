@@ -14,7 +14,7 @@ void Node::broadcastHeartbeat()
 {
 	struct timespec sleepFor;
 	sleepFor.tv_sec = 0;
-	sleepFor.tv_nsec = 300 * 1000 * 1000; //300 ms
+	sleepFor.tv_nsec = 100 * 1000 * 1000; //100 ms
 	while(1)
 	{
 		broadcastUpdatedPath(this->id);
@@ -24,7 +24,7 @@ void Node::broadcastHeartbeat()
 
 void Node::broadcastUpdatedPath(int dest)
 {
-	int no_newCost = htonl(dir[dest]->edgeCost);
+	int no_newCost = htonl(dir[dest]->pathCost);
 	short int no_dest = htons(dest);
 
 	char sendBuf[4+sizeof(short int)+sizeof(int)];

@@ -14,6 +14,10 @@ struct Packet
 	char* rawPacket;
 
 	Packet(int prevHop, Node* node, int bytesRecvd, char* rawPacket);
+
+	int extractSendSrc();
+	int findNewNextHop();
+
 	void handleSendOP();
 	void handlePathOP();
 	void handleCostOP();
