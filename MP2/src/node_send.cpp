@@ -1,6 +1,6 @@
 #include "header_files/node.h"
 
-void Node::broadcast(const char* buf, int length)
+void Node::broadcast(char* buf, int length)
 {
 	for(int i=0; i<numResidents; i++) {
 		if(i != id)

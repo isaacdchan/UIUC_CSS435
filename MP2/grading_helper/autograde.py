@@ -8,11 +8,11 @@ import os
 import shutil
 import sys
 
-directory_results = "results/"
-manager_file = "./bin/manager"
-maketopology_file = "grading_helper/make_topology.pl"
+directory_results = "../results"
+manager_file = "../bin/manager"
+maketopology_file = "./make_topology.pl"
 network_name = "eth0" #Replace this with the name of the network you see with ifconfig command in the terminal
-program_name = "./bin/node" #Replace this with your program name
+program_name = "../bin/node" #Replace this with your program name
 
 def initialize_results():
 	if (os.path.exists(directory_results)):

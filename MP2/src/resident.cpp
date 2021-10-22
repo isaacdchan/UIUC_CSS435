@@ -22,8 +22,9 @@ void Resident::recordHeartbeat()
 	// edgeIsActive = true;
 }
 
-void Resident::send(unsigned char* buf, int length)
+void Resident::send(char* buf, int length)
 {
+	// is it actually being sent?
 	sendto(udpSocket, buf, length, 0,
-	(struct sockaddr*)&sockaddr, sizeof(sockaddr));
+		(struct sockaddr*)&sockaddr, sizeof(sockaddr));
 }

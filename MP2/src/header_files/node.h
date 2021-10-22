@@ -7,21 +7,21 @@
 
 struct Node
 {
-	int id;
+	short int id;
 	static const int numResidents = 256;
 	int udpSocket;
 	Logger* logger;
 	Resident* dir[numResidents];
 
 	// init
-	Node(int id, string costsFile, string logFile);
+	Node(short int id, string costsFile, string logFile);
 	~Node();
 	void initDir(int udpSocket);
 	void initCosts(string costsFile);
 	void initLogFile(string logFile);
 
 	// send
-	void broadcast(const char* buf, int length);
+	void broadcast(char* buf, int length);
 	void broadcastHeartbeat();
 	void broadcastUpdatedPath(int dest);
 

@@ -14,6 +14,7 @@ struct Logger {
 	void addEdgeRevived(int otherNode);
 	void addEdgeExpired(int otherNode);
 	void addSend(int src, string msg);
-	void addForward(int prevHop, int dest, string msg);
+	void addForward(int src, int dest, string msg);
 	void addRecv(int dest, string msg);
+	void addUnreachable(int src, int dest);
 };

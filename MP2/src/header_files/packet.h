@@ -5,14 +5,15 @@
 
 struct Packet
 {
-	int src; // who originated the message (can be manager)
+	int prevHop; // who originated the message (can be manager)
+	const static int nodeIdSize = sizeof(short int);
 	Node* node;
 	string op;
 	short int dest;
 	int bytesRecvd;
-	unsigned char* rawPacket;
+	char* rawPacket;
 
-	Packet(int src, Node* node, int bytesRecvd, unsigned char* rawPacket);
+	Packet(int prevHop, Node* node, int bytesRecvd, char* rawPacket);
 	void handleSendOP();
 	void handlePathOP();
 	void handleCostOP();

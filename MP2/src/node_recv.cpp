@@ -40,7 +40,7 @@ void Node::listenForMessages()
 	char fromAddr[100];
 	struct sockaddr_in theirAddr;
 	socklen_t theirAddrLen;
-	unsigned char recvBuf[1000];
+	char recvBuf[1000];
 
 	int bytesRecvd;
 	while(1)

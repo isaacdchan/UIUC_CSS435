@@ -21,5 +21,5 @@ struct Resident
 
 	bool checkHealth(timeval currTime);
 	void recordHeartbeat();
-	void send(unsigned char* buf, int length);
+	void send(char* buf, int length);
 };

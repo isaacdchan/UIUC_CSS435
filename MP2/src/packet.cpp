@@ -1,28 +1,28 @@
 #include "header_files/packet.h"
 
 
-string extractMessage(int bytesRecvd, unsigned char* rawPacket)
+string extractMessage(int bytesRecvd, char* rawPacket, bool fromManager)
 {
-	int messageLength = bytesRecvd - 6;
+	// bias of -10 to account for op, dest, prevHop
+	int bias = fromManager ? 6 : 6 + Packet::nodeIdSize;
+	int messageLength = bytesRecvd - bias;
 	char message[messageLength];
-	memcpy(&message, rawPacket + 6, messageLength);
+	memcpy(&message, rawPacket + bias, messageLength);
 	message[messageLength] = '\0';
 
 	return string(message);
 }
 
-Packet::Packet(int _src, Node* _node, int _bytesRecvd, unsigned char* _rawPacket)
-	: src(_src), node(_node), bytesRecvd(_bytesRecvd), rawPacket(_rawPacket)
+Packet::Packet(int _prevHop, Node* _node, int _bytesRecvd, char* _rawPacket)
+	: prevHop(_prevHop), node(_node), bytesRecvd(_bytesRecvd), rawPacket(_rawPacket)
 {
 	char char_op[5];
 	memcpy(char_op, rawPacket, 4);
 	char_op[4] = '\0';
 	op = string(char_op);
 
-	memcpy(&dest, rawPacket + 4, 2);
+	memcpy(&dest, rawPacket + 4, nodeIdSize);
 	dest = ntohs(dest);
-
-	// cout << op << " | " << src  << " | " << dest << endl;
 
 	if (op == "cost") { handleCostOP();	}
 	if (op == "path") { handlePathOP(); }
@@ -62,60 +62,96 @@ void Packet::handlePathOP()
 	srcToDestCost = ntohl(srcToDestCost);
 
 	int currBestCost = node->dir[dest]->pathCost;
-	int selfToSrcEdgeCost = node->dir[src]->edgeCost; // assume edge is live
+	int selfToSrcEdgeCost = node->dir[prevHop]->edgeCost; // assume edge is live
 	int candidatePathCost = selfToSrcEdgeCost + srcToDestCost;
 
 	// cout << currBestCost << " | " << candidatePathCost << endl;
 	if (candidatePathCost < currBestCost)
 	{
-		node->updatePath(dest, src, candidatePathCost);
+		node->updatePath(dest, prevHop, candidatePathCost);
 	} if (candidatePathCost == currBestCost)  // tiebreak based on lower value
 	{
 		int currNextHop = node->dir[dest]->nextHop;
-		if (src < currNextHop)
+		if (prevHop < currNextHop)
 		{
-			node->updatePath(dest, src, candidatePathCost);
+			node->updatePath(dest, prevHop, candidatePathCost);
 		}
 	}
 }
+
+// send4hello | send42hello
 void Packet::handleSendOP()
 {
-	// I AM INTENDED TARGET
+	int src;
+	bool fromManager = false;
+	if (prevHop == -1)
+	{
+		src = -1;
+		fromManager = true;
+	} else
+	{
+		memcpy(&src, rawPacket + 6, nodeIdSize);
+		src = ntohs(src);
+	}
+	string message = extractMessage(bytesRecvd, rawPacket, fromManager);
+
 	if (dest == node->id)
 	{
-		int prevHop; // who forwarded it to me
-		int src; // original sender (could be same as above)
-		string message; // extract message
 		node->logger->addRecv(src, message);
+		return;
 	}
-	else
+
+
+	Resident* nextHopResident = node->dir[node->dir[dest]->nextHop];
+
+	// could have gone down between last path update
+	if (!nextHopResident->edgeIsActive)
 	{
-		// send4hello
-		string message = extractMessage(bytesRecvd, rawPacket);
-
-		Resident* destResident = node->dir[dest];
-		int nextHop = destResident->nextHop;
-		Resident* nextHopResident = node->dir[nextHop];
-
-		// could have gone down between last path update
-		if (!nextHopResident->edgeIsActive)
+		int closestNeighbor = INT_MIN;
+		int cheapestEdge = INT_MAX;
+		for (Resident* r: node->dir)
 		{
-			// nextHop is by default shortest edge?
-			// how to find another nextHop? ask closest neighbor
-		} else 
-		{
-			nextHopResident->send(rawPacket, bytesRecvd);
+			// since it increments through dir, the smaller edge id will always win
+			if (r->edgeIsActive && r->edgeCost < cheapestEdge) 
+			{
+				closestNeighbor = r->id;
+				cheapestEdge = r->edgeCost;
+			}
 		}
 
-
-		// final logging
-		// might have to log unreachable
-		if (src == -1) //manager
+		if (closestNeighbor == INT_MIN) // no edges active
 		{
-			node->logger->addSend(dest, message);
-		} else 
-		{
-			node->logger->addForward(src, dest, message);
+			node->logger->addUnreachable(src, dest);
+			return;
 		}
+
+		// don't think need to broadcast ATM?
+		nextHopResident = node->dir[closestNeighbor];
 	}
+	if (fromManager)
+	{
+		// need to modify rawPacket so this->id is included
+		char newPacket[bytesRecvd+nodeIdSize];
+		short int no_srcId = htons(node->id);
+
+		int messageLength = bytesRecvd - 6;
+
+		// send<dest>
+		memcpy(&newPacket, rawPacket, 6);
+		// send<dest><src>
+		memcpy(newPacket + 6, &no_srcId, nodeIdSize);
+		// send<dest><src><msg>
+		memcpy(newPacket + 6 + nodeIdSize, rawPacket + 6, messageLength);
+
+		// string message2 = extractMessage(bytesRecvd+nodeIdSize, newPacket, 0);
+		// cout << "MESSAGE2: " << message2 << endl;
+
+		node->logger->addSend(dest, message);
+		nextHopResident->send(newPacket, bytesRecvd+nodeIdSize);
+	} else 
+	{
+		node->logger->addForward(src, dest, message);
+		nextHopResident->send(rawPacket, bytesRecvd);
+	}
+
 }

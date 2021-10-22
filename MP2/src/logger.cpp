@@ -5,7 +5,6 @@ Logger::Logger(int _id, string _logFile)
 {
 	ofstream out;
 	out.open(logFile, ofstream::out | ofstream::trunc);
-	cout << "init logger id:" << id << endl;
 }
 
 void Logger::add()
@@ -44,9 +43,14 @@ void Logger::addSend(int dest, string msg)
 	ss << "sending msg to node" << dest << ": " << msg;
 	add();
 }
-void Logger::addForward(int prevHop, int dest, string msg)
+void Logger::addForward(int src, int dest, string msg)
 {
-	ss << "forwarding msg from node" << prevHop << " to node" << dest << ": " << msg;
+	ss << "forwarding msg from node" << src << " to node" << dest << ": " << msg;
+	add();
+}
+void Logger::addUnreachable(int src, int dest)
+{
+	ss << "path from node" << src << " to node" << dest << " does not currently exist";
 	add();
 }
 void Logger::addRecv(int src, string msg)
