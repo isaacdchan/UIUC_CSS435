@@ -62,7 +62,7 @@ void Node::initDir(int udpSocket)
 }
 
 Node::Node(short int _id, string costsFile, string logFile)
-	: id(_id), logger(new Logger(id, logFile))
+	: id(_id), logger(new Logger(id, logFile, false))
 {
 	if((udpSocket=socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{

@@ -146,11 +146,11 @@ void Packet::handleSendOP()
 		// string message2 = extractMessage(bytesRecvd+nodeIdSize, newPacket, 0);
 		// cout << "MESSAGE2: " << message2 << endl;
 
-		node->logger->addSend(dest, message);
+		node->logger->addSend(nextHopResident->id, dest, message);
 		nextHopResident->send(newPacket, bytesRecvd+nodeIdSize);
 	} else 
 	{
-		node->logger->addForward(src, dest, message);
+		node->logger->addForward(node->id, nextHopResident->id, dest, message);
 		nextHopResident->send(rawPacket, bytesRecvd);
 	}
 
