@@ -1,7 +1,7 @@
 #include "header_files/resident.h"
 
 Resident::Resident(int _id, int _udpSocket)
-	: id(id), udpSocket(_udpSocket), pathCost(INT_MAX), edgeCost(1), nextHop(-1), edgeIsActive(false) {}
+	: id(_id), udpSocket(_udpSocket), pathCost(INT_MAX), edgeCost(1), nextHop(-1), edgeIsActive(false) {}
 
 bool Resident::checkHealth(timeval currTime)
 {

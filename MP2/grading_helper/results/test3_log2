@@ -1,0 +1,2 @@
+forward packet dest 0 nexthop 1 message more gridness
+forward packet dest 50 nexthop 1 message 23 to 50, let's go

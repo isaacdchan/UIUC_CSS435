@@ -101,11 +101,22 @@ void Packet::handleSendOP()
 		return;
 	}
 
+	Resident* destResident = node->dir[dest];
+	Resident* nextHopResident;
+	int nextHop = destResident->nextHop;
 
-	Resident* nextHopResident = node->dir[node->dir[dest]->nextHop];
+	bool nextHopActive = true;
+	if (nextHop == -1)
+	{
+		nextHopActive = false;
+	} else
+	{
+		nextHopResident = node->dir[nextHop];
+		if (!nextHopResident->edgeIsActive) { nextHopActive = false; }
+	}
 
 	// could have gone down between last path update
-	if (!nextHopResident->edgeIsActive)
+	if (!nextHopActive)
 	{
 		int closestNeighbor = INT_MIN;
 		int cheapestEdge = INT_MAX;

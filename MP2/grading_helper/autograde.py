@@ -8,7 +8,7 @@ import os
 import shutil
 import sys
 
-directory_results = "../results"
+directory_results = "./results/"
 manager_file = "../bin/manager"
 maketopology_file = "./make_topology.pl"
 network_name = "eth0" #Replace this with the name of the network you see with ifconfig command in the terminal
@@ -98,13 +98,14 @@ if __name__ == '__main__':
 	output_zip = "out"
 	num_tests = 8
 	initialize_results()
-	for i in range(1,num_tests+1):
-		run_test(i)
+	run_test(3)
+	# for i in range(1,num_tests+1):
+	# 	run_test(i)
 	if (os.path.isfile(output_zip+".zip")):		
 		os.remove(output_zip+".zip")
 	os.system("zip -r "+output_zip+" "+directory_results)
-	if (os.path.exists(directory_results)):
-		shutil.rmtree(directory_results)
+	# if (os.path.exists(directory_results)):
+	# 	shutil.rmtree(directory_results)
 	os.system("sudo iptables --flush")
 
 
