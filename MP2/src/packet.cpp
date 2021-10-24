@@ -3,7 +3,7 @@
 
 string extractMessage(int bytesRecvd, char* rawPacket, bool fromManager)
 {
-	// bias of -10 to account for op, dest, prevHop
+	// bias of -10 to account for op, dest, src
 	int bias = fromManager ? 6 : 6 + Packet::nodeIdSize;
 	int messageLength = bytesRecvd - bias;
 	char message[messageLength];
@@ -13,16 +13,19 @@ string extractMessage(int bytesRecvd, char* rawPacket, bool fromManager)
 	return string(message);
 }
 
-Packet::Packet(int _prevHop, Node* _node, int _bytesRecvd, char* _rawPacket)
-	: prevHop(_prevHop), node(_node), bytesRecvd(_bytesRecvd), rawPacket(_rawPacket)
+Packet::Packet(int srcID, Node* _node, int _bytesRecvd, char* _rawPacket)
+	: node(_node), bytesRecvd(_bytesRecvd), rawPacket(_rawPacket)
 {
 	char char_op[5];
 	memcpy(char_op, rawPacket, 4);
 	char_op[4] = '\0';
 	op = string(char_op);
 
-	memcpy(&dest, rawPacket + 4, nodeIdSize);
-	dest = ntohs(dest);
+	short int destID;
+	memcpy(&destID, rawPacket + 4, nodeIdSize);
+	destID = ntohs(destID);
+	dest = node->dir[destID];
+	src = node->dir[srcID];
 
 	if (op == "cost") { handleCostOP();	}
 	if (op == "path") { handlePathOP(); }
@@ -35,12 +38,10 @@ void Packet::handleCostOP()
 	memcpy(&newEdgeCost, rawPacket + 6, 4);
 	newEdgeCost = ntohl(newEdgeCost);
 
-	Resident* destResident = node->dir[dest];
-
-	int oldEdgeCost = destResident->edgeCost;
+	int oldEdgeCost = dest->edgeCost;
 	int edgeDiff = oldEdgeCost - newEdgeCost;
-	destResident->edgeCost = newEdgeCost;
-	node->logger->addEdgeCostUpdate(dest, newEdgeCost);
+	dest->edgeCost = newEdgeCost;
+	node->logger->addEdgeCostUpdate(dest->id, newEdgeCost);
 
 	for (Resident* r: node->dir)
 	{
@@ -51,7 +52,7 @@ void Packet::handleCostOP()
 			int oldPathCost = r->pathCost;
 			int newPathCost = oldPathCost - edgeDiff;
 			// nextHop remains the same for now
-			node->updatePath(dest, destResident->nextHop, newPathCost);
+			node->updatePath(r, dest, newPathCost);
 		}
 	}
 }
@@ -60,147 +61,99 @@ void Packet::handlePathOP()
 	int srcToDestCost;
 	memcpy(&srcToDestCost, rawPacket + 6, 4);
 	srcToDestCost = ntohl(srcToDestCost);
+	src->costsToOthers[dest->id] = srcToDestCost;
 
-	int currPathCost = node->dir[dest]->pathCost;
-	// prevHop == src
-	int selfToSrcEdgeCost = node->dir[prevHop]->edgeCost; // assume edge is live
+	int currPathCost = dest->pathCost;
+	int selfToSrcEdgeCost = src->edgeCost; // assume edge is live
 	int candidatePathCost = selfToSrcEdgeCost + srcToDestCost;
 
 	bool shouldUpdatePath = false;
-	if (candidatePathCost < currPathCost) { shouldUpdatePath = true; }
-	if (candidatePathCost == currPathCost)  // tiebreak based on lower value
+	if (candidatePathCost < currPathCost)
 	{
-		int currNextHop = node->dir[dest]->nextHop;
-		if (prevHop < currNextHop) { shouldUpdatePath = true; }
+		node->updatePath(dest, src, candidatePathCost);
 	}
-
-	if (shouldUpdatePath)
+	if (candidatePathCost == currPathCost && src->id < dest->nextHop->id)  // tiebreak based on lower value
 	{
-		// node->logger->ss << selfToSrcEdgeCost << " | " << srcToDestCost << " | " << dest;
-		// node->logger->add();
-		node->updatePath(dest, prevHop, candidatePathCost);
-		// for paths to all other residents
-		for (Resident* r: node->dir)
-		{
-			// for neighbors who's path passed through dest
-			// AND are not dest itself (don't rebroadcast)
-			// AND we've a heartbeat from this nieghbor already
-			if (r->nextHop == dest && r->id != dest && currPathCost != INT_MAX)
-			{
-				// calculate the difference in cost, now that self -> dest is cheaper
-				// ex. n1 -> n2 was 5, updated to 3
-				// n1 -> n3 used to cost 8 going through n2
-				// must decrease cost to 6
-				// int oldPathCostToR = r->pathCost;
-				// int newPathCostToDest = node->dir[dest]->pathCost;
-				// int costSaved = currPathCost - newPathCostToDest;
-				// int newPathCostToR = oldPathCostToR - costSaved;
-				/*
-				this = node3, r = node1, dest = node2, r.nextHop = node2
-				edge from node1 to node2 is 54
-				oldCost from node3 to node1 = 55 via node2 (node1 has seen node2. node3 has not seen node2)
-				oldCost from node3 to node2 is INT_MAX because we have not seen it yet
-				newCost from node3 to node2 is 1 via node2
-				newCost from node3 to node1 needs to be 2 via node2
-				
-				node->logger->ss << r->id << " | " << r->nextHop << " | " << dest << " | " << endl;
-				node->logger->ss << currPathCost << " | " << newPathCostToDest << " | " << candidatePathCost << " | " << endl;
-				node->logger->ss << oldPathCostToR << " | " << newPathCostToDest << " | " << costSaved << " | " << newPathCostToR;
-				node->logger->add();
-				*/
-
-				// node->updatePath(r->id, r->nextHop, newPathCostToR);
-			}
-		}
+		node->updatePath(dest, src, candidatePathCost);
 	}
 }
 
 // send4hello | send42hello
 void Packet::handleSendOP()
 {
-	int src = extractSendSrc();
-	bool fromManager = (src == -1) ? true : false;
+	short int origin = extractOrigin();
+	bool fromManager = (origin == -1) ? true : false;
 	string message = extractMessage(bytesRecvd, rawPacket, fromManager);
+	node->logger->ss << "Origin: " << origin;
+	node->logger->add();
 
-	if (dest == node->id)
+	if (dest->id == node->id)
 	{
-		node->logger->addRecv(src, message);
+		node->logger->addRecv(origin, message);
 		return;
 	}
 
-	Resident* destResident = node->dir[dest];
-	Resident* nextHopResident;
-	int nextHop = destResident->nextHop;
-
-	bool nextHopActive = (nextHop != -1) ? true : false;
-	nextHopResident = node->dir[nextHop];
-	nextHopActive = (nextHopResident->edgeIsActive) ? true : false;
+	Resident* nextHop = dest->nextHop;
 
 	// could have gone down between last path update
-	if (!nextHopActive)
+	if (nextHop == NULL || !nextHop->edgeIsActive)
 	{
-		int newNextHop = findNewNextHop();
+		nextHop = findNewNextHop();
 
-		if (newNextHop == -1) // no edges active
+		if (nextHop == NULL) // no edges active
 		{
-			node->logger->addUnreachable(src, dest);
+			node->logger->addUnreachable(origin, dest->id);
 			return;
-		} else
-		{
-			// don't think need to broadcast ATM?
-			nextHopResident = node->dir[newNextHop];
 		}
 	}
 	if (fromManager)
 	{
-		// need to modify rawPacket so this->id is included
+		// need to add TTL
 		char newPacket[bytesRecvd+nodeIdSize];
-		short int no_srcId = htons(node->id);
+		short int no_origin = htons(node->id);
 
 		int messageLength = bytesRecvd - 6;
 
 		// send<dest>
 		memcpy(&newPacket, rawPacket, 6);
 		// send<dest><src>
-		memcpy(newPacket + 6, &no_srcId, nodeIdSize);
+		memcpy(newPacket + 6, &no_origin, nodeIdSize);
 		// send<dest><src><msg>
 		memcpy(newPacket + 6 + nodeIdSize, rawPacket + 6, messageLength);
 
-		node->logger->addSend(nextHopResident->id, dest, message);
-		nextHopResident->send(newPacket, bytesRecvd+nodeIdSize);
+		// node->logger->addSend(nextHopResident->id, dest, message);
+		nextHop->send(newPacket, bytesRecvd+nodeIdSize);
 	} else 
 	{
-		node->logger->addForward(src, nextHopResident->id, dest, message);
-		nextHopResident->send(rawPacket, bytesRecvd);
+		node->logger->addForward(origin, nextHop->id, dest->id, message);
+		nextHop->send(rawPacket, bytesRecvd);
 	}
 
 }
 
-int Packet::findNewNextHop() {
-	int closestNeighbor = -1;
-	int cheapestEdge = INT_MAX;
+Resident* Packet::findNewNextHop() {
+	Resident* closestNeighbor = NULL;
 	for (Resident* r: node->dir)
 	{
 		// since it increments through dir, the smaller edge id will always win
-		if (r->edgeIsActive && r->edgeCost < cheapestEdge) 
+		if (r->edgeIsActive && r->edgeCost < closestNeighbor->edgeCost) 
 		{
-			closestNeighbor = r->id;
-			cheapestEdge = r->edgeCost;
+			closestNeighbor = r;
 		}
 	}
 
 	return closestNeighbor;
 }
 
-int Packet::extractSendSrc() {
-	int src;
-	if (prevHop == -1)
+short int Packet::extractOrigin() {
+	short int origin;
+	if (src->id == -1)
 	{
-		src = -1;
+		origin = -1;
 	} else
 	{
-		memcpy(&src, rawPacket + 6, nodeIdSize);
-		src = ntohs(src);
+		memcpy(&origin, rawPacket + 6, nodeIdSize);
+		origin = ntohs(origin);
 	}
-	return src;
+	return origin;
 }

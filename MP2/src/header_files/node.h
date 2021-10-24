@@ -8,10 +8,9 @@
 struct Node
 {
 	short int id;
-	static const int numResidents = 256;
 	int udpSocket;
 	Logger* logger;
-	Resident* dir[numResidents];
+	Resident* dir[MAX_RESIDENTS];
 
 	// init
 	Node(short int id, string costsFile, string logFile);
@@ -23,10 +22,11 @@ struct Node
 	// send
 	void broadcast(char* buf, int length);
 	void broadcastHeartbeat();
-	void broadcastPathCost(int dest);
+	void broadcastPathCost(Resident* dest);
 
 	// recv
 	void monitorResidentsHealth();
 	void listenForMessages();
-	void updatePath(int dest, int nextHop, int newPathCost);
+	void updatePath(Resident* dest, Resident* nextHop, int newPathCost);
+	void findAltPath(Resident* dest);
 };

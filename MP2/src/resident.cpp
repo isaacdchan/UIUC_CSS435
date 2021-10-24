@@ -1,7 +1,13 @@
 #include "header_files/resident.h"
 
 Resident::Resident(int _id, int _udpSocket)
-	: id(_id), udpSocket(_udpSocket), pathCost(INT_MAX), edgeCost(1), nextHop(-1), edgeIsActive(false) {}
+	: id(_id), udpSocket(_udpSocket), pathCost(INT_MAX), edgeCost(1), nextHop(NULL), edgeIsActive(false)
+{
+	for (int i=0; i < MAX_RESIDENTS; i++)
+	{
+		costsToOthers[i] = INT_MAX;
+	}
+}
 
 bool Resident::checkHealth(timeval currTime)
 {

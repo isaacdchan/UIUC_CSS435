@@ -1,7 +1,5 @@
 #include "header_files/node.h"
 
-#define VERBOSE true
-
 tuple<int, int> parseLine(string line)
 {
 	stringstream ss(line);
@@ -43,7 +41,7 @@ void Node::initCosts(string costsFile)
 
 void Node::initDir(int udpSocket)
 {
-	for(int i=0; i<numResidents; i++)
+	for(int i=0; i<MAX_RESIDENTS; i++)
 	{
 		dir[i] = new Resident(i, udpSocket);
 
@@ -51,7 +49,7 @@ void Node::initDir(int udpSocket)
 		{
 			dir[i]->pathCost = 0;
 			dir[i]->edgeCost = 0;
-			dir[i]->nextHop = i;
+			dir[i]->nextHop = dir[i];
 		}
 		
 		char tempaddr[100];
@@ -93,8 +91,8 @@ Node::Node(short int _id, string costsFile, string logFile)
 Node::~Node() {
 	delete logger;
 
-	for(int i=0; i<numResidents; i++)
+	for (Resident* r: dir)
 	{
-		delete dir[i];
+		delete r;
 	}
 }

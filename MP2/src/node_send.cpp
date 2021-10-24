@@ -2,10 +2,11 @@
 
 void Node::broadcast(char* buf, int length)
 {
-	for(int i=0; i<numResidents; i++) {
-		if(i != id)
+	for (Resident* r: dir)
+	{
+		if(r->id != id)
 		{
-			dir[i]->send(buf, length);
+			r->send(buf, length);
 		}
 	}
 }
@@ -17,27 +18,23 @@ void Node::broadcastHeartbeat()
 	sleepFor.tv_nsec = 100 * 1000 * 1000; //100 ms
 	while(1)
 	{
-		for (int i=0; i<numResidents; i++)
+		for (Resident* r: dir)
 		{
-			if (dir[i]->pathCost != INT_MAX) { broadcastPathCost(i); }
+			if (r->pathCost != INT_MAX) { broadcastPathCost(r); }
 		}
 		nanosleep(&sleepFor, 0);
 	}
 }
 
-void Node::broadcastPathCost(int dest)
+void Node::broadcastPathCost(Resident* dest)
 {
-	if (dir[dest]->pathCost < 0 || dir[dest]-> pathCost > 10000) {
-		logger->ss << "OH SHIT: " << dest << " | " << dir[dest]->pathCost;
-		logger->add();
-	}
-	int no_cost = htonl(dir[dest]->pathCost);
-	short int no_dest = htons(dest);
+	int no_cost = htonl(dest->pathCost);
+	short int no_destID = htons(dest->id);
 
 	char sendBuf[4+sizeof(short int)+sizeof(int)];
 
 	strcpy(sendBuf, "path");
-	memcpy(sendBuf+4, &no_dest, 2);
+	memcpy(sendBuf+4, &no_destID, 2);
 	memcpy(sendBuf+6, &no_cost, 4);
 	
 	broadcast(sendBuf, 10);

@@ -20,3 +20,7 @@ using namespace std;
 #include <vector>
 #include <tuple>
 #include <bits/stdc++.h>
+
+#define MAX_RESIDENTS 256
+#define EXPIRATION_THRESHOLD 600
+#define VERBOSE true

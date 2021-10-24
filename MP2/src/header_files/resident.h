@@ -2,8 +2,6 @@
 
 #include "imports.h"
 
-#define EXPIRATION_THRESHOLD 600
-
 struct Resident
 {
 	int id;
@@ -12,9 +10,10 @@ struct Resident
 	sockaddr_in sockaddr;
 	// string path; 
 	int pathCost;
-	int nextHop;
+	Resident* nextHop;
 	bool edgeIsActive;
 	int edgeCost;
+	int costsToOthers[MAX_RESIDENTS];
 
 	Resident(int _id, int _udpSocket);
 	Resident();

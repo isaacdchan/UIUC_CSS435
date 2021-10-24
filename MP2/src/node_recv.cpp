@@ -8,30 +8,51 @@ void Node::monitorResidentsHealth()
 	while (1)
 	{
 		gettimeofday(&currTime, 0);
-		for (int i=0; i<numResidents; i++)
+		for (Resident* r: dir)
 		{
-			if (i == id) continue;
-			isHealthy = dir[i]->checkHealth(currTime);
-			// constantly returning healthy
+			if (r->id == id) continue;
+			isHealthy = r->checkHealth(currTime);
 			if (isHealthy)
 			{
-				// if (!dir[i]->edgeIsActive)
-				// {
-				// 	logger->addEdgeRevived(i);
-				// }
-
-				// cout << "healthy: " << i << endl;
-				dir[i]->edgeIsActive = true;
+				// if (!dir[i]->edgeIsActive) { logger->addEdgeRevived(i); }
+				r->edgeIsActive = true;
 			} else
 			{
-				if (dir[i]->edgeIsActive)
+				if (r->edgeIsActive)
 				{
-					dir[i]->edgeIsActive = false;
-					logger->addEdgeExpired(i);
-					// don't need to immediately update paths
+					r->edgeIsActive = false;
+					logger->addEdgeExpired(r->id);
+					findAltPath(r);
 				}
 			}
 		}
+	}
+}
+
+void Node::findAltPath(Resident* dest)
+{
+	int cheapestAltPath = INT_MAX;
+	Resident* cheapestAltNextHop = NULL;
+	for (Resident* r: dir)
+	{
+		int rPathToDest = r->costsToOthers[dest->id];
+		if (rPathToDest < cheapestAltPath && r->nextHop->edgeIsActive)
+		{
+			cheapestAltNextHop = r;
+			cheapestAltPath = rPathToDest;
+		}
+	}
+
+	// make sure candidate isn't the way you just came from
+	// make sure candidate->nextHop != this->id
+	logger->ss << "CANDIDATE Path to Dest + newNextHop + newCost " << dest->id << " | " << cheapestAltNextHop->id << " | " << cheapestAltPath;
+	logger->add();
+	if (cheapestAltNextHop != NULL)
+	{
+		dest->nextHop = cheapestAltNextHop;
+		dest->pathCost = cheapestAltNextHop->pathCost + cheapestAltPath;
+		logger->ss << "NEW Path to Dest + newNextHop + newCost " << dest->id << " | " << dest->nextHop << " | " << dest->pathCost;
+		logger->add();
 	}
 }
 
@@ -57,7 +78,8 @@ void Node::listenForMessages()
 		inet_ntop(AF_INET, &theirAddr.sin_addr, fromAddr, 100);
 
 		// manager
-		if(strstr(fromAddr, "10.0.0.")) {
+		if(strstr(fromAddr, "10.0.0."))
+		{
 			Packet p = Packet(-1, this, bytesRecvd, recvBuf);
 		}
 		// neighbor
@@ -74,14 +96,9 @@ void Node::listenForMessages()
 	close(udpSocket);
 }
 
-// path cost from node66 - node77 will not change
-// how does node0 now know that he can go through node66
-
-// after shortcut from 11 - 66 opens up, 11 should reconsider all the paths from 66 -> N
-// and whether curr path from from 11 -> N is faster or new path from 11 -> 66 -> N
-void Node::updatePath(int dest, int nextHop, int newPathCost)
+void Node::updatePath(Resident* dest, Resident* nextHop, int newPathCost)
 {
-	dir[dest]->pathCost = newPathCost;
-	dir[dest]->nextHop = nextHop;
-	logger->addPathCostUpdate(dest, nextHop, newPathCost);
+	dest->pathCost = newPathCost;
+	dest->nextHop = nextHop;
+	logger->addPathCostUpdate(dest->id, nextHop->id, newPathCost);
 }
