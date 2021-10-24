@@ -13,7 +13,7 @@ struct Packet
 	int bytesRecvd;
 	char* rawPacket;
 
-	Packet(int srcID, Node* node, int bytesRecvd, char* rawPacket);
+	Packet(Node* node, int srcID, int bytesRecvd, char* rawPacket);
 
 	short int extractOrigin();
 	Resident* findNewNextHop();

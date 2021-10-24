@@ -80,7 +80,7 @@ void Node::listenForMessages()
 		// manager
 		if(strstr(fromAddr, "10.0.0."))
 		{
-			Packet p = Packet(-1, this, bytesRecvd, recvBuf);
+			Packet p = Packet(this, -1, bytesRecvd, recvBuf);
 		}
 		// neighbor
 		if(strstr(fromAddr, "10.1.1."))
@@ -90,7 +90,7 @@ void Node::listenForMessages()
 					strchr(strchr(strchr(fromAddr,'.')+1,'.')+1,'.')+1);
 			
 			dir[sender]->recordHeartbeat();
-			Packet p = Packet(sender, this, bytesRecvd, recvBuf);
+			Packet p = Packet(this, sender, bytesRecvd, recvBuf);
 		}
 	}
 	close(udpSocket);

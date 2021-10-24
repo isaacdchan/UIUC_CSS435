@@ -13,7 +13,7 @@ string extractMessage(int bytesRecvd, char* rawPacket, bool fromManager)
 	return string(message);
 }
 
-Packet::Packet(int srcID, Node* _node, int _bytesRecvd, char* _rawPacket)
+Packet::Packet(Node* _node, int srcID, int _bytesRecvd, char* _rawPacket)
 	: node(_node), bytesRecvd(_bytesRecvd), rawPacket(_rawPacket)
 {
 	char char_op[5];
@@ -25,7 +25,13 @@ Packet::Packet(int srcID, Node* _node, int _bytesRecvd, char* _rawPacket)
 	memcpy(&destID, rawPacket + 4, nodeIdSize);
 	destID = ntohs(destID);
 	dest = node->dir[destID];
-	src = node->dir[srcID];
+	if (srcID == -1)
+	{
+		src = NULL;
+	} else
+	{
+		src = node->dir[srcID];
+	}
 
 	if (op == "cost") { handleCostOP();	}
 	if (op == "path") { handlePathOP(); }
@@ -84,8 +90,6 @@ void Packet::handleSendOP()
 	short int origin = extractOrigin();
 	bool fromManager = (origin == -1) ? true : false;
 	string message = extractMessage(bytesRecvd, rawPacket, fromManager);
-	node->logger->ss << "Origin: " << origin;
-	node->logger->add();
 
 	if (dest->id == node->id)
 	{
@@ -121,14 +125,13 @@ void Packet::handleSendOP()
 		// send<dest><src><msg>
 		memcpy(newPacket + 6 + nodeIdSize, rawPacket + 6, messageLength);
 
-		// node->logger->addSend(nextHopResident->id, dest, message);
+		node->logger->addSend(nextHop->id, dest->id, message);
 		nextHop->send(newPacket, bytesRecvd+nodeIdSize);
 	} else 
 	{
 		node->logger->addForward(origin, nextHop->id, dest->id, message);
 		nextHop->send(rawPacket, bytesRecvd);
 	}
-
 }
 
 Resident* Packet::findNewNextHop() {
@@ -147,7 +150,7 @@ Resident* Packet::findNewNextHop() {
 
 short int Packet::extractOrigin() {
 	short int origin;
-	if (src->id == -1)
+	if (src == NULL)
 	{
 		origin = -1;
 	} else
