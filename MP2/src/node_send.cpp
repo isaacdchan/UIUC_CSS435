@@ -17,21 +17,28 @@ void Node::broadcastHeartbeat()
 	sleepFor.tv_nsec = 100 * 1000 * 1000; //100 ms
 	while(1)
 	{
-		broadcastUpdatedPath(this->id);
+		for (int i=0; i<numResidents; i++)
+		{
+			if (dir[i]->pathCost != INT_MAX) { broadcastPathCost(i); }
+		}
 		nanosleep(&sleepFor, 0);
 	}
 }
 
-void Node::broadcastUpdatedPath(int dest)
+void Node::broadcastPathCost(int dest)
 {
-	int no_newCost = htonl(dir[dest]->pathCost);
+	if (dir[dest]->pathCost < 0 || dir[dest]-> pathCost > 10000) {
+		logger->ss << "OH SHIT: " << dest << " | " << dir[dest]->pathCost;
+		logger->add();
+	}
+	int no_cost = htonl(dir[dest]->pathCost);
 	short int no_dest = htons(dest);
 
 	char sendBuf[4+sizeof(short int)+sizeof(int)];
 
 	strcpy(sendBuf, "path");
 	memcpy(sendBuf+4, &no_dest, 2);
-	memcpy(sendBuf+6, &no_newCost, 4);
+	memcpy(sendBuf+6, &no_cost, 4);
 	
 	broadcast(sendBuf, 10);
 }

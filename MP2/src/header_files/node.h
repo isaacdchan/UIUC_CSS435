@@ -23,7 +23,7 @@ struct Node
 	// send
 	void broadcast(char* buf, int length);
 	void broadcastHeartbeat();
-	void broadcastUpdatedPath(int dest);
+	void broadcastPathCost(int dest);
 
 	// recv
 	void monitorResidentsHealth();

@@ -76,16 +76,40 @@ void Packet::handlePathOP()
 
 	if (shouldUpdatePath)
 	{
+		// node->logger->ss << selfToSrcEdgeCost << " | " << srcToDestCost << " | " << dest;
+		// node->logger->add();
 		node->updatePath(dest, prevHop, candidatePathCost);
+		// for paths to all other residents
 		for (Resident* r: node->dir)
 		{
-			if (r->nextHop == dest)
+			// for neighbors who's path passed through dest
+			// AND are not dest itself (don't rebroadcast)
+			// AND we've a heartbeat from this nieghbor already
+			if (r->nextHop == dest && r->id != dest && currPathCost != INT_MAX)
 			{
-				int oldPathCostToR = r->pathCost;
-				int newPathCostToDest = node->dir[dest]->pathCost;
-				int costSaved = oldPathCostToR - newPathCostToDest;
-				int newPathCostToR = oldPathCostToR - costSaved;
-				node->updatePath(r->id, r->nextHop, newPathCostToR);
+				// calculate the difference in cost, now that self -> dest is cheaper
+				// ex. n1 -> n2 was 5, updated to 3
+				// n1 -> n3 used to cost 8 going through n2
+				// must decrease cost to 6
+				// int oldPathCostToR = r->pathCost;
+				// int newPathCostToDest = node->dir[dest]->pathCost;
+				// int costSaved = currPathCost - newPathCostToDest;
+				// int newPathCostToR = oldPathCostToR - costSaved;
+				/*
+				this = node3, r = node1, dest = node2, r.nextHop = node2
+				edge from node1 to node2 is 54
+				oldCost from node3 to node1 = 55 via node2 (node1 has seen node2. node3 has not seen node2)
+				oldCost from node3 to node2 is INT_MAX because we have not seen it yet
+				newCost from node3 to node2 is 1 via node2
+				newCost from node3 to node1 needs to be 2 via node2
+				
+				node->logger->ss << r->id << " | " << r->nextHop << " | " << dest << " | " << endl;
+				node->logger->ss << currPathCost << " | " << newPathCostToDest << " | " << candidatePathCost << " | " << endl;
+				node->logger->ss << oldPathCostToR << " | " << newPathCostToDest << " | " << costSaved << " | " << newPathCostToR;
+				node->logger->add();
+				*/
+
+				// node->updatePath(r->id, r->nextHop, newPathCostToR);
 			}
 		}
 	}
@@ -125,7 +149,6 @@ void Packet::handleSendOP()
 		{
 			// don't think need to broadcast ATM?
 			nextHopResident = node->dir[newNextHop];
-			
 		}
 	}
 	if (fromManager)
@@ -143,14 +166,11 @@ void Packet::handleSendOP()
 		// send<dest><src><msg>
 		memcpy(newPacket + 6 + nodeIdSize, rawPacket + 6, messageLength);
 
-		// string message2 = extractMessage(bytesRecvd+nodeIdSize, newPacket, 0);
-		// cout << "MESSAGE2: " << message2 << endl;
-
 		node->logger->addSend(nextHopResident->id, dest, message);
 		nextHopResident->send(newPacket, bytesRecvd+nodeIdSize);
 	} else 
 	{
-		node->logger->addForward(node->id, nextHopResident->id, dest, message);
+		node->logger->addForward(src, nextHopResident->id, dest, message);
 		nextHopResident->send(rawPacket, bytesRecvd);
 	}
 

@@ -74,11 +74,14 @@ void Node::listenForMessages()
 	close(udpSocket);
 }
 
+// path cost from node66 - node77 will not change
+// how does node0 now know that he can go through node66
+
+// after shortcut from 11 - 66 opens up, 11 should reconsider all the paths from 66 -> N
+// and whether curr path from from 11 -> N is faster or new path from 11 -> 66 -> N
 void Node::updatePath(int dest, int nextHop, int newPathCost)
 {
 	dir[dest]->pathCost = newPathCost;
 	dir[dest]->nextHop = nextHop;
 	logger->addPathCostUpdate(dest, nextHop, newPathCost);
-	// broadcast to neighbors that they have a new cheapest path from self to dest
-	broadcastUpdatedPath(dest);
 }
