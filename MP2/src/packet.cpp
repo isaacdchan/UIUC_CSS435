@@ -1,28 +1,16 @@
 #include "header_files/packet.h"
 
 
-string extractMessage(int bytesRecvd, char* rawPacket, bool fromManager)
-{
-	// bias of -10 to account for op, dest, src
-	int bias = fromManager ? 6 : 6 + Packet::nodeIdSize;
-	int messageLength = bytesRecvd - bias;
-	char message[messageLength];
-	memcpy(&message, rawPacket + bias, messageLength);
-	message[messageLength] = '\0';
-
-	return string(message);
-}
-
 Packet::Packet(Node* _node, int srcID, int _bytesRecvd, char* _rawPacket)
 	: node(_node), bytesRecvd(_bytesRecvd), rawPacket(_rawPacket)
 {
-	char char_op[5];
-	memcpy(char_op, rawPacket, 4);
-	char_op[4] = '\0';
+	char char_op[op_size];
+	memcpy(char_op, rawPacket, op_size);
+	char_op[op_size] = '\0';
 	op = string(char_op);
 
 	short int destID;
-	memcpy(&destID, rawPacket + 4, nodeIdSize);
+	memcpy(&destID, rawPacket + op_size, nodeID_size);
 	destID = ntohs(destID);
 	dest = node->dir[destID];
 	if (srcID == -1)
@@ -84,7 +72,8 @@ void Packet::handlePathOP()
 	}
 }
 
-// send4hello | send42hello
+// from manager: send<dest><message> ex. send4hello
+// from  node: send<dest><src><TTL><message> send4216hello
 void Packet::handleSendOP()
 {
 	short int origin = extractOrigin();
@@ -113,20 +102,20 @@ void Packet::handleSendOP()
 	if (fromManager)
 	{
 		// need to add TTL
-		char newPacket[bytesRecvd+nodeIdSize];
+		char newPacket[bytesRecvd+nodeID_size];
 		short int no_origin = htons(node->id);
 
-		int messageLength = bytesRecvd - 6;
+		int messageLength = bytesRecvd - sendHeader_size;
 
 		// send<dest>
-		memcpy(&newPacket, rawPacket, 6);
+		memcpy(&newPacket, rawPacket, sendHeader_size);
 		// send<dest><src>
-		memcpy(newPacket + 6, &no_origin, nodeIdSize);
+		memcpy(newPacket + sendHeader_size, &no_origin, nodeID_size);
 		// send<dest><src><msg>
-		memcpy(newPacket + 6 + nodeIdSize, rawPacket + 6, messageLength);
+		memcpy(newPacket + sendHeader_size + nodeID_size, rawPacket + sendHeader_size, messageLength);
 
 		node->logger->addSend(nextHop->id, dest->id, message);
-		nextHop->send(newPacket, bytesRecvd+nodeIdSize);
+		nextHop->send(newPacket, bytesRecvd+nodeID_size);
 	} else 
 	{
 		node->logger->addForward(origin, nextHop->id, dest->id, message);
@@ -146,17 +135,4 @@ Resident* Packet::findNewNextHop() {
 	}
 
 	return closestNeighbor;
-}
-
-short int Packet::extractOrigin() {
-	short int origin;
-	if (src == NULL)
-	{
-		origin = -1;
-	} else
-	{
-		memcpy(&origin, rawPacket + 6, nodeIdSize);
-		origin = ntohs(origin);
-	}
-	return origin;
 }

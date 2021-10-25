@@ -5,7 +5,6 @@
 
 struct Packet
 {
-	const static int nodeIdSize = sizeof(short int);
 	Node* node;
 	string op;
 	Resident* dest;
@@ -13,9 +12,15 @@ struct Packet
 	int bytesRecvd;
 	char* rawPacket;
 
+	int sendHeader_size = op_size + nodeID_size;
+	int forwardHeader_size = op_size + nodeID_size + nodeID_size;
+
 	Packet(Node* node, int srcID, int bytesRecvd, char* rawPacket);
 
+	string extractMessage(int bytesRecvd, char* rawPacket, bool fromManager);
 	short int extractOrigin();
+	// short int extractOrigin();
+	short int extractTTL();
 	Resident* findNewNextHop();
 	
 	void checkIfPathUpdateAffectsOtherPaths(int dest);

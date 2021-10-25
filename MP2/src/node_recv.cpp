@@ -36,7 +36,7 @@ void Node::findAltPath(Resident* dest)
 	for (Resident* r: dir)
 	{
 		int rPathToDest = r->costsToOthers[dest->id];
-		if (rPathToDest < cheapestAltPath && r->nextHop->edgeIsActive)
+		if (rPathToDest < cheapestAltPath && r->nextHop->edgeIsActive && r->nextHop)
 		{
 			cheapestAltNextHop = r;
 			cheapestAltPath = rPathToDest;

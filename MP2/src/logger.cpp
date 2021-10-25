@@ -1,7 +1,7 @@
 #include "header_files/logger.h"
 
-Logger::Logger(int _id, string _logFile, bool _verbose) 
-	: id(_id), logFile(_logFile), verbose(_verbose)
+Logger::Logger(int testID, string _logFile, bool _verbose) 
+	: testID(testID), logFile(_logFile), verbose(_verbose)
 {
 	ofstream out;
 	out.open(logFile, ofstream::out | ofstream::trunc);

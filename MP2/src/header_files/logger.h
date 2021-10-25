@@ -2,13 +2,13 @@
 #include "imports.h"
 
 struct Logger {
-	int id;
+	int testID;
 	bool verbose;
 	string logFile;
 	stringstream ss;
 	
 
-	Logger(int testId, string logFile, bool verbose);
+	Logger(int testID, string logFile, bool verbose);
 	void add();
 	void addEdgeCostUpdate(int otherNode, int updatedCost);
 	void addPathCostUpdate(int dest, int nextHop, int updatedCost);

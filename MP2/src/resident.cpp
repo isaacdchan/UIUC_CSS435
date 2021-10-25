@@ -25,12 +25,10 @@ bool Resident::checkHealth(timeval currTime)
 void Resident::recordHeartbeat()
 {
 	gettimeofday(&lastHeartbeat, 0);
-	// edgeIsActive = true;
 }
 
 void Resident::send(char* buf, int length)
 {
-	// is it actually being sent?
 	sendto(udpSocket, buf, length, 0,
 		(struct sockaddr*)&sockaddr, sizeof(sockaddr));
 }

@@ -20,10 +20,7 @@ void Node::broadcastHeartbeat()
 	{
 		for (Resident* r: dir)
 		{
-			if (r->pathCost != INT_MAX) {
-				broadcastPathCost(r);
-				// logger->ss << "Broadcasting that my path to " << r->id << " costs " << r->pathCost << endl;
-			}
+			if (r->pathCost != INT_MAX) { broadcastPathCost(r); }
 		}
 		nanosleep(&sleepFor, 0);
 	}
