@@ -9,23 +9,24 @@ struct Packet
 	string op;
 	Resident* dest;
 	Resident* src;
+	bool fromManager;
 	int bytesRecvd;
+	int TTL;
 	char* rawPacket;
 
 	int sendHeader_size = op_size + nodeID_size;
-	int forwardHeader_size = op_size + nodeID_size + nodeID_size;
+	int forwardHeader_size = op_size + nodeID_size + nodeID_size + TTL_size;
 
 	Packet(Node* node, int srcID, int bytesRecvd, char* rawPacket);
-
-	string extractMessage(int bytesRecvd, char* rawPacket, bool fromManager);
-	short int extractOrigin();
-	// short int extractOrigin();
-	short int extractTTL();
-	Resident* findNewNextHop();
-	
-	void checkIfPathUpdateAffectsOtherPaths(int dest);
 
 	void handleSendOP();
 	void handlePathOP();
 	void handleCostOP();
+	void findAltPath(Resident* dest);
+
+	// packet_buf_utils
+	string extractMessage();
+	short int extractOrigin();
+	int extractTTL();
+	char* constructSendPacket();
 };

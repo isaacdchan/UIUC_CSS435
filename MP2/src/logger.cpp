@@ -87,11 +87,11 @@ void Logger::addRecv(int src, string msg)
 	add();
 }
 
-void Logger::addUnreachable(int src, int dest)
+void Logger::addUnreachable(int origin, int dest)
 {
 	if (verbose)
 	{
-		ss << "path from node" << src << " to node" << dest << " does not currently exist";
+		ss << "path from node" << origin << " to node" << dest << " does not currently exist";
 	} else
 	{
 		ss << "unreachable dest " << dest;

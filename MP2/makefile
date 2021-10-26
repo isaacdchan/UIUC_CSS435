@@ -1,4 +1,4 @@
-all: node.o node_send.o node_recv.o logger.o packet.o packet_extract.o resident.o main.o node manager
+all: node.o node_send.o node_recv.o logger.o packet.o packet_buf_utils.o resident.o main.o node manager
 
 main.o: src/main.cpp
 	g++ -c -pthread src/main.cpp -o out/main.o
@@ -18,8 +18,8 @@ logger.o: src/logger.cpp
 packet.o: src/packet.cpp
 	g++ -c src/packet.cpp -o out/packet.o
 
-packet_extract.o: src/packet_extract.cpp
-	g++ -c src/packet_extract.cpp -o out/packet_extract.o
+packet_buf_utils.o: src/packet_buf_utils.cpp
+	g++ -c src/packet_buf_utils.cpp -o out/packet_buf_utils.o
 
 resident.o: src/resident.cpp
 	g++ -c src/resident.cpp -o out/resident.o

@@ -22,37 +22,9 @@ void Node::monitorResidentsHealth()
 				{
 					r->edgeIsActive = false;
 					logger->addEdgeExpired(r->id);
-					findAltPath(r);
 				}
 			}
 		}
-	}
-}
-
-void Node::findAltPath(Resident* dest)
-{
-	int cheapestAltPath = INT_MAX;
-	Resident* cheapestAltNextHop = NULL;
-	for (Resident* r: dir)
-	{
-		int rPathToDest = r->costsToOthers[dest->id];
-		if (rPathToDest < cheapestAltPath && r->nextHop->edgeIsActive && r->nextHop)
-		{
-			cheapestAltNextHop = r;
-			cheapestAltPath = rPathToDest;
-		}
-	}
-
-	// make sure candidate isn't the way you just came from
-	// make sure candidate->nextHop != this->id
-	logger->ss << "CANDIDATE Path to Dest + newNextHop + newCost " << dest->id << " | " << cheapestAltNextHop->id << " | " << cheapestAltPath;
-	logger->add();
-	if (cheapestAltNextHop != NULL)
-	{
-		dest->nextHop = cheapestAltNextHop;
-		dest->pathCost = cheapestAltNextHop->pathCost + cheapestAltPath;
-		logger->ss << "NEW Path to Dest + newNextHop + newCost " << dest->id << " | " << dest->nextHop << " | " << dest->pathCost;
-		logger->add();
 	}
 }
 

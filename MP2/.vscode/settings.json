@@ -14,7 +14,8 @@
 		"string_view": "cpp",
 		"*.tcc": "cpp",
 		"istream": "cpp",
-		"streambuf": "cpp"
+		"streambuf": "cpp",
+		"socket.h": "c"
 	},
 	"C_Cpp.errorSquiggles": "Enabled"
 }

@@ -29,7 +29,7 @@ Packet::Packet(Node* _node, int srcID, int _bytesRecvd, char* _rawPacket)
 void Packet::handleCostOP()
 {
 	int newEdgeCost;
-	memcpy(&newEdgeCost, rawPacket + 6, 4);
+	memcpy(&newEdgeCost, rawPacket + op_size + nodeID_size, edgeCost_size);
 	newEdgeCost = ntohl(newEdgeCost);
 
 	int oldEdgeCost = dest->edgeCost;
@@ -73,66 +73,79 @@ void Packet::handlePathOP()
 }
 
 // from manager: send<dest><message> ex. send4hello
-// from  node: send<dest><src><TTL><message> send4216hello
+// from  node: send<dest><src><MAX_TTL><message> send4216hello
 void Packet::handleSendOP()
 {
 	short int origin = extractOrigin();
-	bool fromManager = (origin == -1) ? true : false;
-	string message = extractMessage(bytesRecvd, rawPacket, fromManager);
+	fromManager = (origin == -1) ? true : false;
+	string message = extractMessage();
 
 	if (dest->id == node->id)
 	{
 		node->logger->addRecv(origin, message);
 		return;
 	}
+	extractTTL();
+	if ( !fromManager ) { TTL-=1; }
+
+	node->logger->ss << "TTL: " << TTL;
+	node->logger->add();
+
+	// if (TTL == 0)
+	// {
+	// 	node->logger->addUnreachable(origin, dest->id)
+	// }
 
 	Resident* nextHop = dest->nextHop;
 
-	// could have gone down between last path update
 	if (nextHop == NULL || !nextHop->edgeIsActive)
 	{
-		nextHop = findNewNextHop();
-
-		if (nextHop == NULL) // no edges active
-		{
-			node->logger->addUnreachable(origin, dest->id);
-			return;
-		}
+		findAltPath(dest);
+		nextHop = dest->nextHop;
 	}
+	if (nextHop == NULL)
+	{
+		// node->logger->addUnreachable(origin, dest->id)
+	}
+
+	char* newRawPacket = constructSendPacket();
 	if (fromManager)
 	{
-		// need to add TTL
-		char newPacket[bytesRecvd+nodeID_size];
-		short int no_origin = htons(node->id);
-
-		int messageLength = bytesRecvd - sendHeader_size;
-
-		// send<dest>
-		memcpy(&newPacket, rawPacket, sendHeader_size);
-		// send<dest><src>
-		memcpy(newPacket + sendHeader_size, &no_origin, nodeID_size);
-		// send<dest><src><msg>
-		memcpy(newPacket + sendHeader_size + nodeID_size, rawPacket + sendHeader_size, messageLength);
-
 		node->logger->addSend(nextHop->id, dest->id, message);
-		nextHop->send(newPacket, bytesRecvd+nodeID_size);
+		nextHop->send(newRawPacket, bytesRecvd+nodeID_size+TTL_size);
 	} else 
 	{
-		node->logger->addForward(origin, nextHop->id, dest->id, message);
-		nextHop->send(rawPacket, bytesRecvd);
+		node->logger->addForward(src->id, nextHop->id, dest->id, message);
+		nextHop->send(newRawPacket, bytesRecvd);
 	}
+	delete newRawPacket;
 }
 
-Resident* Packet::findNewNextHop() {
-	Resident* closestNeighbor = NULL;
+void Packet::findAltPath(Resident* dest)
+{
+	Resident* cheapestAltNextHop = NULL;
+	int cheapestAltPathCost = INT_MAX;
 	for (Resident* r: node->dir)
 	{
-		// since it increments through dir, the smaller edge id will always win
-		if (r->edgeIsActive && r->edgeCost < closestNeighbor->edgeCost) 
+		if (r == src || r->nextHop==NULL) { continue; }
+		if (!r->nextHop->edgeIsActive) { continue; }
+
+		int rPathToDestCost = r->costsToOthers[dest->id];
+		if (rPathToDestCost < cheapestAltPathCost)
 		{
-			closestNeighbor = r;
+			cheapestAltNextHop = r;
+			cheapestAltPathCost = rPathToDestCost;
 		}
 	}
 
-	return closestNeighbor;
+	node->logger->ss << "CANDIDATE Path to Dest + newNextHop + newCost " << dest->id << " | " << cheapestAltNextHop->id << " | " << cheapestAltPathCost;
+	node->logger->add();
+	if (cheapestAltNextHop != NULL)
+	{
+		dest->nextHop = cheapestAltNextHop;
+		dest->pathCost = cheapestAltNextHop->pathCost + cheapestAltPathCost;
+	} else // no nextHop was found
+	{
+		// infinite loops
+	}
 }
