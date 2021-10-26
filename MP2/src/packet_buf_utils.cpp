@@ -24,9 +24,8 @@ string Packet::extractMessage()
 	return string(message);
 }
 
-short int Packet::extractOrigin()
+void Packet::extractOrigin()
 {
-	short int origin;
 	if (src == NULL)
 	{
 		origin = -1;
@@ -35,12 +34,19 @@ short int Packet::extractOrigin()
 		memcpy(&origin, rawPacket + sendHeader_size, nodeID_size);
 		origin = ntohs(origin);
 	}
-	return origin;
 }
 char* Packet::constructSendPacket()
 {
 	char* newPacket = new char[bytesRecvd+nodeID_size+TTL_size];
-	short int no_origin = htons(node->id);
+
+	short int no_origin;
+	if (fromManager)
+	{
+		no_origin = htons(node->id);
+	} else
+	{
+		no_origin = htons(origin);
+	}
 	int no_TTL = htonl(TTL);
 
 	int bias = fromManager ? sendHeader_size : forwardHeader_size;

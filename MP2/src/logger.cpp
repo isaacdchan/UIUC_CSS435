@@ -66,7 +66,7 @@ void Logger::addForward(int src, int nextHop, int dest, string msg)
 {
 	if (verbose)
 	{
-		ss << "forwarding msg from node" << src << " via nextHop " << nextHop << " to node" << dest << ": " << msg;
+		ss << "forwarding msg from node" << src << " to node" << dest << " via nextHop " << nextHop <<  ": " << msg;
 	} else
 	{
 		ss << "forward packet dest " << dest << " nexthop " << nextHop << " message " << msg;
@@ -87,14 +87,8 @@ void Logger::addRecv(int src, string msg)
 	add();
 }
 
-void Logger::addUnreachable(int origin, int dest)
+void Logger::addUnreachable(int dest)
 {
-	if (verbose)
-	{
-		ss << "path from node" << origin << " to node" << dest << " does not currently exist";
-	} else
-	{
-		ss << "unreachable dest " << dest;
-	}
+	ss << "unreachable dest " << dest;
 	add();
 }

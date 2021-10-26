@@ -28,4 +28,5 @@ struct Node
 	void monitorResidentsHealth();
 	void listenForMessages();
 	void updatePath(Resident* dest, Resident* nextHop, int newPathCost);
+	void findAltPath(Resident* src, Resident* dest);
 };

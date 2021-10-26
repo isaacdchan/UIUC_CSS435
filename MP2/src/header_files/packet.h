@@ -11,6 +11,7 @@ struct Packet
 	Resident* src;
 	bool fromManager;
 	int bytesRecvd;
+	short int origin;
 	int TTL;
 	char* rawPacket;
 
@@ -22,11 +23,10 @@ struct Packet
 	void handleSendOP();
 	void handlePathOP();
 	void handleCostOP();
-	void findAltPath(Resident* dest);
 
 	// packet_buf_utils
 	string extractMessage();
-	short int extractOrigin();
+	void extractOrigin();
 	int extractTTL();
 	char* constructSendPacket();
 };

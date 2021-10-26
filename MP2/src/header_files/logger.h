@@ -17,5 +17,5 @@ struct Logger {
 	void addSend(int nextHop, int dest, string msg);
 	void addForward(int src, int nextHop, int dest, string msg);
 	void addRecv(int dest, string msg);
-	void addUnreachable(int src, int dest);
+	void addUnreachable(int dest);
 };

@@ -21,7 +21,9 @@ void Node::monitorResidentsHealth()
 				if (r->edgeIsActive)
 				{
 					r->edgeIsActive = false;
+					// findAltPath(r);
 					logger->addEdgeExpired(r->id);
+					// should tell N11 to look for N1 instead of N10
 				}
 			}
 		}
@@ -68,9 +70,49 @@ void Node::listenForMessages()
 	close(udpSocket);
 }
 
+void Node::findAltPath(Resident* src, Resident* dest)
+{
+	logger->ss << "Looking for alt path!";
+	logger->add();
+	Resident* altNextHop = NULL;
+	int cheapestAltPathCost = INT_MAX;
+
+	// for every other resident
+	for (Resident* r: dir)
+	{
+		// if r is not the prevHop AND
+		// r has a nextHop AND
+		// r's nextHop is active
+		if (r == src || r->nextHop==NULL) { continue; }
+		if (!r->edgeIsActive) { continue; }
+
+		// check the dist from r to dest
+		int rPathCostToDest = r->costsToOthers[dest->id];
+
+		logger->ss << "\tPotential Candidate: " << r->id << " | " << r->edgeCost << " | " << rPathCostToDest;
+		logger->add();
+		if (r->edgeCost + rPathCostToDest < cheapestAltPathCost)
+		{
+			altNextHop = r;
+			cheapestAltPathCost = r->edgeCost + rPathCostToDest;
+		}
+	}
+
+	if (altNextHop != NULL)
+	{
+		updatePath(dest, altNextHop, altNextHop->pathCost + cheapestAltPathCost);
+	}
+}
+
 void Node::updatePath(Resident* dest, Resident* nextHop, int newPathCost)
 {
 	dest->pathCost = newPathCost;
 	dest->nextHop = nextHop;
-	logger->addPathCostUpdate(dest->id, nextHop->id, newPathCost);
+	if (dest->nextHop != NULL)
+	{
+		logger->addPathCostUpdate(dest->id, nextHop->id, newPathCost);
+	} else 
+	{
+		// logger->addUnreachable(dest->id);
+	}
 }

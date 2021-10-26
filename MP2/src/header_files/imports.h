@@ -22,7 +22,7 @@ using namespace std;
 #include <bits/stdc++.h>
 
 #define MAX_RESIDENTS 256
-#define EXPIRATION_THRESHOLD 600
+#define EXPIRATION_THRESHOLD 800
 #define VERBOSE true
 
 #define nodeID_size sizeof(short int)
