@@ -9,11 +9,9 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 	// validate user args
-	if(argc != 5 || (strcmp(argv[2], "cost") && strcmp(argv[2], "send")))
-	{
+	if(argc != 5 || (strcmp(argv[2], "cost") && strcmp(argv[2], "send"))) {
 		fprintf(stderr, "Usage: %s destnode command [args]\n'command' must be 'send' or 'cost'.\n\n", argv[0]);
 		if(argc>2 && !strcmp(argv[2], "cost") && argc != 5)
 			fprintf(stderr, "Usage: %s destnode cost destID newCost\n\n", argv[0]);

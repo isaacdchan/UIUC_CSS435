@@ -3,14 +3,12 @@
 Resident::Resident(int _id, int _udpSocket)
 	: id(_id), udpSocket(_udpSocket), pathCost(INT_MAX), edgeCost(1), nextHop(NULL), edgeIsActive(false)
 {
-	for (int i=0; i < MAX_RESIDENTS; i++)
-	{
+	for (int i=0; i < MAX_RESIDENTS; i++) {
 		costsToOthers[i] = INT_MAX;
 	}
 }
 
-bool Resident::checkHealth(timeval currTime)
-{
+bool Resident::checkHealth(timeval currTime) {
 	int i;
 	time_t then, now, diff;
 
@@ -22,13 +20,11 @@ bool Resident::checkHealth(timeval currTime)
 	return diff < EXPIRATION_THRESHOLD;
 }
 
-void Resident::recordHeartbeat()
-{
+void Resident::recordHeartbeat() {
 	gettimeofday(&lastHeartbeat, 0);
 }
 
-void Resident::send(char* buf, int length)
-{
+void Resident::send(char* buf, int length) {
 	sendto(udpSocket, buf, length, 0,
 		(struct sockaddr*)&sockaddr, sizeof(sockaddr));
 }

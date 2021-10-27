@@ -1,7 +1,6 @@
 #include "header_files/node.h"
 
-tuple<int, int> parseLine(string line)
-{
+tuple<int, int> parseLine(string line) {
 	stringstream ss(line);
 	string token;
 	ss >> token;
@@ -13,8 +12,7 @@ tuple<int, int> parseLine(string line)
 	return tup;
 }
 
-vector<tuple<int, int>> parseCostsFile(string filepath)
-{
+vector<tuple<int, int>> parseCostsFile(string filepath) {
 	string line;
 	vector<tuple<int, int>> costs;
 
@@ -30,8 +28,7 @@ vector<tuple<int, int>> parseCostsFile(string filepath)
 	return costs;
 }	
 
-void Node::initCosts(string costsFile)
-{
+void Node::initCosts(string costsFile) {
 	vector<tuple<int, int>> initial_costs = parseCostsFile(costsFile);
 	for (tuple<int, int> tup : initial_costs)
 	{
@@ -39,14 +36,11 @@ void Node::initCosts(string costsFile)
 	}
 }
 
-void Node::initDir(int udpSocket)
-{
-	for(int i=0; i<MAX_RESIDENTS; i++)
-	{
+void Node::initDir(int udpSocket) {
+	for(int i=0; i<MAX_RESIDENTS; i++) {
 		dir[i] = new Resident(i, udpSocket);
 
-		if (i == id)
-		{
+		if (i == id) {
 			dir[i]->pathCost = 0;
 			dir[i]->edgeCost = 0;
 			dir[i]->nextHop = dir[i];
@@ -64,8 +58,7 @@ void Node::initDir(int udpSocket)
 Node::Node(short int _id, string costsFile, string logFile)
 	: id(_id), logger(new Logger(id, logFile, VERBOSE))
 {
-	if((udpSocket=socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-	{
+	if((udpSocket=socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		perror("socket");
 		exit(1);
 	}
@@ -80,8 +73,7 @@ Node::Node(short int _id, string costsFile, string logFile)
 	bindAddr.sin_family = AF_INET;
 	bindAddr.sin_port = htons(7777);
 	inet_pton(AF_INET, myAddr, &bindAddr.sin_addr);
-	if(bind(udpSocket, (struct sockaddr*)&bindAddr, sizeof(struct sockaddr_in)) < 0)
-	{
+	if(bind(udpSocket, (struct sockaddr*)&bindAddr, sizeof(struct sockaddr_in)) < 0) {
 		perror("bind");
 		close(udpSocket);
 		exit(1);
@@ -90,9 +82,5 @@ Node::Node(short int _id, string costsFile, string logFile)
 
 Node::~Node() {
 	delete logger;
-
-	for (Resident* r: dir)
-	{
-		delete r;
-	}
+	for (Resident* r: dir) { delete r; }
 }

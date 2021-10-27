@@ -23,8 +23,9 @@ struct Packet
 
 	Packet(Node* node, int srcID, int bytesRecvd, char* rawPacket);
 
-	void handleExpiredPacket();
+	void handleZeroTTL();
 	void handleSendOP();
+	void handleUnreachablePath();
 	void handlePathOP();
 	void handleCostOP();
 
