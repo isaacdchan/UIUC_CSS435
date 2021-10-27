@@ -65,6 +65,7 @@ void Packet::handlePathOP()
 			node->logger->ss << "Received news that node" << src->id << " cannot reach node" << dest->id;
 			node->logger->add();
 			node->updatePath(dest, NULL, INT_MAX);
+			node->findAltPath(src, dest);
 		}
 		return;
 	}
@@ -84,31 +85,24 @@ void Packet::handleExpiredPacket()
 {
 	node->logger->ss << "FOUND EXPIRED PACKET";
 	node->logger->add();
-
 	node->updatePath(dest, NULL, INT_MAX);
 	node->broadcastPathCost(dest);
-
 	node->findAltPath(src, dest);
-	node->logger->ss << "DONE";
-	node->logger->add();
 
 	TTL = MAX_TTL;
 	char* newRawPacket = constructSendPacket();
-	if (dest->nextHop != NULL)
-	{
-		node->logger->ss << "FOUND ALT ROUTE";
-		node->logger->add();
-		node->logger->addForward(src->id, dest->nextHop->id, dest->id, message);
-		dest->nextHop->send(newRawPacket, bytesRecvd);
-	} else 
+
+	if (dest->nextHop == NULL)
 	{
 		// send it back
 		node->updatePath(dest, NULL, INT_MAX);
 		node->broadcastPathCost(dest);
-		node->logger->ss << "NO VIABLE PATHS. RETURN TO SENDER";
-		node->logger->add();
 		node->logger->addForward(src->id, src->id, dest->id, message);
 		src->send(newRawPacket, bytesRecvd);
+	} else 
+	{
+		node->logger->addForward(src->id, dest->nextHop->id, dest->id, message);
+		dest->nextHop->send(newRawPacket, bytesRecvd);
 	}
 
 }
@@ -141,8 +135,6 @@ void Packet::handleSendOP()
 	if (dest->nextHop == NULL || !dest->nextHop->edgeIsActive)
 	{
 		node->findAltPath(src, dest);
-		node->logger->ss << "DONE FINDING ALT PATH";
-		node->logger->add();
 	}
 	if (dest->nextHop == NULL)
 	{
@@ -150,8 +142,6 @@ void Packet::handleSendOP()
 		node->broadcastPathCost(dest);
 		TTL = MAX_TTL;
 		char* newRawPacket = constructSendPacket();
-		node->logger->ss << "NO VIABLE PATHS. RETURN TO SENDER";
-		node->logger->add();
 		node->logger->addForward(src->id, src->id, dest->id, message);
 		src->send(newRawPacket, bytesRecvd);
 		return;

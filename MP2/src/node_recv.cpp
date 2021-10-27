@@ -113,6 +113,6 @@ void Node::updatePath(Resident* dest, Resident* nextHop, int newPathCost)
 	} else 
 	{
 		// node->broadcastPathCost(dest);
-		// logger->addUnreachable(dest->id);
+		logger->addUnreachable(dest->id);
 	}
 }
