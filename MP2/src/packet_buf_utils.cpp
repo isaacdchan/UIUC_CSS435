@@ -13,15 +13,16 @@ int Packet::extractTTL()
 		TTL = ntohl(raw_TTL);
 	}
 }
-string Packet::extractMessage()
+
+void Packet::extractMessage()
 {
 	int bias = fromManager ? sendHeader_size : forwardHeader_size;
 	int messageLength = bytesRecvd - bias;
-	char message[messageLength];
-	memcpy(&message, rawPacket + bias, messageLength);
-	message[messageLength] = '\0';
+	char message_arr[messageLength];
+	memcpy(&message_arr, rawPacket + bias, messageLength);
+	message_arr[messageLength] = '\0';
 
-	return string(message);
+	message =  string(message_arr);
 }
 
 void Packet::extractOrigin()

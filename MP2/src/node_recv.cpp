@@ -12,9 +12,10 @@ void Node::monitorResidentsHealth()
 		{
 			if (r->id == id) continue;
 			isHealthy = r->checkHealth(currTime);
+
 			if (isHealthy)
 			{
-				// if (!dir[i]->edgeIsActive) { logger->addEdgeRevived(i); }
+				// if (!r->edgeIsActive) { logger->addEdgeRevived(r->id); }
 				r->edgeIsActive = true;
 			} else
 			{
@@ -77,14 +78,11 @@ void Node::findAltPath(Resident* src, Resident* dest)
 	Resident* altNextHop = NULL;
 	int cheapestAltPathCost = INT_MAX;
 
-	// for every other resident
 	for (Resident* r: dir)
 	{
-		// if r is not the prevHop AND
-		// r has a nextHop AND
-		// r's nextHop is active
-		if (r == src || r->nextHop==NULL) { continue; }
+		if (r->nextHop==NULL) { continue; }
 		if (!r->edgeIsActive) { continue; }
+		if (r->costsToOthers[dest->id] == INT_MAX) { continue; }
 
 		// check the dist from r to dest
 		int rPathCostToDest = r->costsToOthers[dest->id];
@@ -98,21 +96,23 @@ void Node::findAltPath(Resident* src, Resident* dest)
 		}
 	}
 
-	if (altNextHop != NULL)
-	{
+	if (altNextHop != NULL) {
 		updatePath(dest, altNextHop, altNextHop->pathCost + cheapestAltPathCost);
+	} else {
+		updatePath(dest, NULL, INT_MAX);
 	}
 }
 
 void Node::updatePath(Resident* dest, Resident* nextHop, int newPathCost)
 {
-	dest->pathCost = newPathCost;
 	dest->nextHop = nextHop;
+	dest->pathCost = newPathCost;
 	if (dest->nextHop != NULL)
 	{
 		logger->addPathCostUpdate(dest->id, nextHop->id, newPathCost);
 	} else 
 	{
+		// node->broadcastPathCost(dest);
 		// logger->addUnreachable(dest->id);
 	}
 }
