@@ -28,5 +28,3 @@ using namespace std;
 #define nodeID_size sizeof(short int)
 #define op_size 4
 #define edgeCost_size 4
-#define TTL_size sizeof(int)
-#define MAX_TTL 16

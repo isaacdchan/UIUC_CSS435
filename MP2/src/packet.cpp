@@ -50,13 +50,15 @@ void Packet::handlePathOP() {
 	int srcToDestCost;
 	memcpy(&srcToDestCost, rawPacket + 6, 4);
 	srcToDestCost = ntohl(srcToDestCost);
-	src->costsToOthers[dest->id] = srcToDestCost;
+	src->costsToDests[dest->id] = srcToDestCost;
 
 	// nodeX just broadcasted that it no longer has a path to nodeY
 	// if your path to nodeX was through nodeY, you need to find altPath
 	if (srcToDestCost == INT_MAX) {
+		node->logger->ss << "Received news that node" << src->id << " can't reach node" << dest->id;
+		node->logger->add();
 		if (dest->nextHop == src) {
-			handleUnreachablePath();
+			node->findAltPath(dest);
 		}
 		return;
 	}
@@ -64,15 +66,27 @@ void Packet::handlePathOP() {
 	int currPathCost = dest->pathCost;
 	int candidatePathCost = src->edgeCost + srcToDestCost;
 
-	// tiebreak based on lower value
-	if (candidatePathCost < currPathCost ||
-		candidatePathCost == currPathCost && src->id < dest->nextHop->id) {
+	// if (candidatePathCost >= 16) {
+	// 	node->logger->addUnreachable(dest->id);
+	// 	node->killPath(dest);
+	// 	node->broadcastPathCost(dest);
+	// }
+
+	// if my path to dest will be affected by src path to dest - update
+	if (dest->nextHop == src && currPathCost != candidatePathCost) {
 		node->updatePath(dest, src, candidatePathCost);
+	} else {
+		// tiebreak based on lower value
+		if (candidatePathCost < currPathCost ||
+			candidatePathCost == currPathCost && src->id < dest->nextHop->id) {
+			node->updatePath(dest, src, candidatePathCost);
+		}
 	}
+
 }
 
 // from manager: send<dest><message> ex. send4hello
-// from  node: send<dest><src><MAX_TTL><message> send4216hello
+// from  node: send<dest><src><message> send42hello
 void Packet::handleSendOP() {
 	extractOrigin();
 	fromManager = (origin == -1) ? true : false;
@@ -83,63 +97,20 @@ void Packet::handleSendOP() {
 		return;
 	}
 
-	extractTTL();
-	if ( !fromManager ) { TTL-=1; }
-
-	if (TTL == 0) {
-		handleZeroTTL();
-		return;
-	}
-
 	// currNextHop is missing or dead
 	if (dest->nextHop == NULL || !dest->nextHop->edgeIsActive) {
-
-		node->logger->ss << "Received send. No nextHop" << dest->id;
-		node->logger->add();
-		node->findAltPath(src, dest, true);
+		node->findAltPath(dest);
 	}
-	if (dest->nextHop == NULL) {
-		node->logger->addUnreachable(dest->id);
-		return;
+	if (dest->nextHop != NULL) {
+		char* newRawPacket = constructSendPacket();
+		if (fromManager) {
+			node->logger->addSend(dest->nextHop->id, dest->id, message);
+			dest->nextHop->send(newRawPacket, bytesRecvd+nodeID_size);
+		} else  {
+			node->logger->addForward(src->id, dest->nextHop->id, dest->id, message);
+			dest->nextHop->send(newRawPacket, bytesRecvd);
+		}
+		delete newRawPacket;
 	}
 
-	char* newRawPacket = constructSendPacket();
-	if (fromManager) {
-		node->logger->addSend(dest->nextHop->id, dest->id, message);
-		dest->nextHop->send(newRawPacket, bytesRecvd+nodeID_size+TTL_size);
-	} else  {
-		node->logger->addForward(src->id, dest->nextHop->id, dest->id, message);
-		dest->nextHop->send(newRawPacket, bytesRecvd);
-	}
-	delete newRawPacket;
-}
-
-void Packet::handleUnreachablePath() {
-	node->logger->ss << "Received news that node" << src->id << " cannot reach node" << dest->id;
-	node->logger->add();
-	node->findAltPath(src, dest, false);
-}
-
-void Packet::handleZeroTTL() {
-	node->logger->ss << "Received expired packet from node" << src->id;
-	node->logger->add();
-	node->findAltPath(src, dest, true);
-
-	TTL = MAX_TTL;
-	char* newRawPacket = constructSendPacket();
-
-	Resident* nextHop;
-	if (dest->nextHop == NULL) {
-		// send it back
-		node->logger->ss << "\tReturning to sender" << src->id;
-		node->logger->add();
-		node->killPath(dest);
-		nextHop = src;
-	} else {
-		nextHop = dest->nextHop;
-		node->logger->addForward(src->id, dest->nextHop->id, dest->id, message);
-		dest->nextHop->send(newRawPacket, bytesRecvd);
-	}
-	node->logger->addForward(src->id, nextHop->id, dest->id, message);
-	nextHop->send(newRawPacket, bytesRecvd);
 }

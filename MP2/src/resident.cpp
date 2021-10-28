@@ -4,7 +4,7 @@ Resident::Resident(int _id, int _udpSocket)
 	: id(_id), udpSocket(_udpSocket), pathCost(INT_MAX), edgeCost(1), nextHop(NULL), edgeIsActive(false)
 {
 	for (int i=0; i < MAX_RESIDENTS; i++) {
-		costsToOthers[i] = INT_MAX;
+		costsToDests[i] = INT_MAX;
 	}
 }
 

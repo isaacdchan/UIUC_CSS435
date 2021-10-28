@@ -13,7 +13,7 @@ struct Resident
 	Resident* nextHop;
 	bool edgeIsActive;
 	int edgeCost;
-	int costsToOthers[MAX_RESIDENTS];
+	int costsToDests[MAX_RESIDENTS];
 
 	Resident(int _id, int _udpSocket);
 	Resident();

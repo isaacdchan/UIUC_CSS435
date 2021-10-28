@@ -16,9 +16,7 @@ void Node::monitorResidentsHealth() {
 			} else {
 				if (r->edgeIsActive) {
 					r->edgeIsActive = false;
-					// findAltPath(r);
 					logger->addEdgeExpired(r->id);
-					// should tell N11 to look for N1 instead of N10
 				}
 			}
 		}
@@ -65,6 +63,7 @@ void Node::updatePath(Resident* dest, Resident* nextHop, int newPathCost) {
 	dest->nextHop = nextHop;
 	dest->pathCost = newPathCost;
 	logger->addPathCostUpdate(dest->id, nextHop->id, newPathCost);
+	broadcastPathCost(dest);
 }
 
 void Node::killPath(Resident* dest) {
@@ -72,10 +71,10 @@ void Node::killPath(Resident* dest) {
 	logger->add();
 	dest->nextHop = NULL;
 	dest->pathCost = INT_MAX;
-	broadcastPathCost(dest);
+	// broadcastPathCost(dest);
 }
 
-void Node::findAltPath(Resident* src, Resident* dest, bool expired) {
+void Node::findAltPath(Resident* dest) {
 	logger->ss << "Looking for alt path to node" << dest->id;
 	logger->add();
 	killPath(dest);
@@ -84,11 +83,11 @@ void Node::findAltPath(Resident* src, Resident* dest, bool expired) {
 
 	for (Resident* r: dir) {
 		if (r->nextHop==NULL) { continue; }
-		if (r->costsToOthers[dest->id] == INT_MAX) { continue; }
-		if (expired && r == src) { continue; }
+		if (!r->nextHop->edgeIsActive) { continue; }
+		if (r->costsToDests[dest->id] == INT_MAX) { continue; }
 
 		// check the dist from r to dest
-		int rPathCostToDest = r->costsToOthers[dest->id];
+		int rPathCostToDest = r->costsToDests[dest->id];
 
 		logger->ss << "\t" << r->id << " | " << r->edgeCost << " | " << rPathCostToDest;
 		logger->add();

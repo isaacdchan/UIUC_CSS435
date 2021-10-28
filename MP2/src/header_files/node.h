@@ -29,5 +29,5 @@ struct Node
 	void listenForMessages();
 	void updatePath(Resident* dest, Resident* nextHop, int newPathCost);
 	void killPath(Resident* dest);
-	void findAltPath(Resident* src, Resident* dest, bool expired);
+	void findAltPath(Resident* dest);
 };
