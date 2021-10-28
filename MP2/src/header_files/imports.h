@@ -26,5 +26,7 @@ using namespace std;
 #define VERBOSE true
 
 #define nodeID_size sizeof(short int)
-#define op_size 4
-#define edgeCost_size 4
+#define op_size sizeof(int)
+#define edgeCost_size sizeof(int)
+#define TTL_size sizeof(int)
+#define MAX_TTL 32

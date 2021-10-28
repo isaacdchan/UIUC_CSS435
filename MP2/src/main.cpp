@@ -16,6 +16,4 @@ int main(int argc, char** argv)
 	announcerThread.join();
 	listenerThread.join();
 	neighborHealthThread.join();
-
-	// delete node;
 }

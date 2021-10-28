@@ -1,0 +1,215 @@
+==5759== Memcheck, a memory error detector
+==5759== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==5759== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==5759== Command: ./bin/node 0 grading_helper/test1/costs1 logs/test1.log
+==5759== Parent PID: 9
+==5759== 
+--5759-- 
+--5759-- Valgrind options:
+--5759--    --leak-check=full
+--5759--    --show-leak-kinds=all
+--5759--    --track-origins=yes
+--5759--    --verbose
+--5759--    --log-file=valgrind-out.txt
+--5759-- Contents of /proc/version:
+--5759--   Linux version 5.10.60.1-microsoft-standard-WSL2 (oe-user@oe-host) (x86_64-msft-linux-gcc (GCC) 9.3.0, GNU ld (GNU Binutils) 2.34.0.20200220) #1 SMP Wed Aug 25 23:20:18 UTC 2021
+--5759-- 
+--5759-- Arch and hwcaps: AMD64, LittleEndian, amd64-cx16-lzcnt-rdtscp-sse3-avx-avx2-bmi
+--5759-- Page sizes: currently 4096, max supported 4096
+--5759-- Valgrind library directory: /usr/lib/valgrind
+--5759-- Reading syms from /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node
+--5759-- Reading syms from /lib/x86_64-linux-gnu/ld-2.27.so
+--5759--   Considering /lib/x86_64-linux-gnu/ld-2.27.so ..
+--5759--   .. CRC mismatch (computed 0ef8daab wanted 65bccefe)
+--5759--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.27.so ..
+--5759--   .. CRC is valid
+--5759-- Reading syms from /usr/lib/valgrind/memcheck-amd64-linux
+--5759--   Considering /usr/lib/valgrind/memcheck-amd64-linux ..
+--5759--   .. CRC mismatch (computed 41ddb025 wanted 9972f546)
+--5759--    object doesn't have a symbol table
+--5759--    object doesn't have a dynamic symbol table
+--5759-- Scheduler: using generic scheduler lock implementation.
+--5759-- Reading suppressions file: /usr/lib/valgrind/default.supp
+==5759== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-5759-by-isaacdchan-on-???
+==5759== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-5759-by-isaacdchan-on-???
+==5759== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-5759-by-isaacdchan-on-???
+==5759== 
+==5759== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==5759== don't want to do, unless you know exactly what you're doing,
+==5759== or are doing some strange experiment):
+==5759==   /usr/lib/valgrind/../../bin/vgdb --pid=5759 ...command...
+==5759== 
+==5759== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==5759==   /path/to/gdb ./bin/node
+==5759== and then give GDB the following command
+==5759==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=5759
+==5759== --pid is optional if only one valgrind process is running
+==5759== 
+--5759-- REDIR: 0x4020d20 (ld-linux-x86-64.so.2:strlen) redirected to 0x580608c1 (???)
+--5759-- REDIR: 0x4020b00 (ld-linux-x86-64.so.2:index) redirected to 0x580608db (???)
+--5759-- Reading syms from /usr/lib/valgrind/vgpreload_core-amd64-linux.so
+--5759--   Considering /usr/lib/valgrind/vgpreload_core-amd64-linux.so ..
+--5759--   .. CRC mismatch (computed 50df1b30 wanted 4800a4cf)
+--5759--    object doesn't have a symbol table
+--5759-- Reading syms from /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so
+--5759--   Considering /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so ..
+--5759--   .. CRC mismatch (computed f893b962 wanted 95ee359e)
+--5759--    object doesn't have a symbol table
+==5759== WARNING: new redirection conflicts with existing -- ignoring it
+--5759--     old: 0x04020d20 (strlen              ) R-> (0000.0) 0x580608c1 ???
+--5759--     new: 0x04020d20 (strlen              ) R-> (2007.0) 0x04c34db0 strlen
+--5759-- REDIR: 0x401d540 (ld-linux-x86-64.so.2:strcmp) redirected to 0x4c35ee0 (strcmp)
+--5759-- REDIR: 0x4021260 (ld-linux-x86-64.so.2:mempcpy) redirected to 0x4c394f0 (mempcpy)
+--5759-- Reading syms from /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25
+--5759--    object doesn't have a symbol table
+--5759-- Reading syms from /lib/x86_64-linux-gnu/libgcc_s.so.1
+--5759--    object doesn't have a symbol table
+--5759-- Reading syms from /lib/x86_64-linux-gnu/libpthread-2.27.so
+--5759--   Considering /usr/lib/debug/.build-id/68/f36706eb2e6eee4046c4fdca2a19540b2f6113.debug ..
+--5759--   .. build-id is valid
+--5759-- Reading syms from /lib/x86_64-linux-gnu/libc-2.27.so
+--5759--   Considering /lib/x86_64-linux-gnu/libc-2.27.so ..
+--5759--   .. CRC mismatch (computed cb654923 wanted 8713c55a)
+--5759--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libc-2.27.so ..
+--5759--   .. CRC is valid
+--5759-- Reading syms from /lib/x86_64-linux-gnu/libm-2.27.so
+--5759--   Considering /lib/x86_64-linux-gnu/libm-2.27.so ..
+--5759--   .. CRC mismatch (computed 8017c758 wanted 0183ab3a)
+--5759--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libm-2.27.so ..
+--5759--   .. CRC is valid
+--5759-- REDIR: 0x569cb70 (libc.so.6:memmove) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569be80 (libc.so.6:strncpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569ce50 (libc.so.6:strcasecmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569b8d0 (libc.so.6:strcat) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569beb0 (libc.so.6:rindex) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569e5a0 (libc.so.6:rawmemchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569cce0 (libc.so.6:mempcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569cb10 (libc.so.6:bcmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569be40 (libc.so.6:strncmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569b940 (libc.so.6:strcmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569cc40 (libc.so.6:memset) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x56b9ed0 (libc.so.6:wcschr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569bde0 (libc.so.6:strnlen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569b9b0 (libc.so.6:strcspn) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569cea0 (libc.so.6:strncasecmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569b980 (libc.so.6:strcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569cfe0 (libc.so.6:memcpy@@GLIBC_2.14) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569bee0 (libc.so.6:strpbrk) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569b900 (libc.so.6:index) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569bdb0 (libc.so.6:strlen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x56a64a0 (libc.so.6:memrchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569cef0 (libc.so.6:strcasecmp_l) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569cae0 (libc.so.6:memchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x56bac90 (libc.so.6:wcslen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569c190 (libc.so.6:strspn) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569ce20 (libc.so.6:stpncpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569cdf0 (libc.so.6:stpcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569e5d0 (libc.so.6:strchrnul) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569cf40 (libc.so.6:strncasecmp_l) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x569ca20 (libc.so.6:strstr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--5759-- REDIR: 0x578c300 (libc.so.6:__strrchr_avx2) redirected to 0x4c34730 (rindex)
+--5759-- REDIR: 0x5695140 (libc.so.6:malloc) redirected to 0x4c31aa0 (malloc)
+--5759-- REDIR: 0x578c4d0 (libc.so.6:__strlen_avx2) redirected to 0x4c34cf0 (strlen)
+--5759-- REDIR: 0x5788ae0 (libc.so.6:__memcmp_avx2_movbe) redirected to 0x4c37e00 (bcmp)
+--5759-- REDIR: 0x56a7c50 (libc.so.6:__strcmp_sse2_unaligned) redirected to 0x4c35da0 (strcmp)
+--5759-- REDIR: 0x4ed1280 (libstdc++.so.6:operator new(unsigned long)) redirected to 0x4c32110 (operator new(unsigned long))
+--5759-- REDIR: 0x578ca10 (libc.so.6:__memcpy_avx_unaligned_erms) redirected to 0x4c386e0 (memmove)
+--5759-- REDIR: 0x5695a30 (libc.so.6:free) redirected to 0x4c32cd0 (free)
+--5759-- REDIR: 0x578c110 (libc.so.6:__strchrnul_avx2) redirected to 0x4c39020 (strchrnul)
+--5759-- REDIR: 0x578ce90 (libc.so.6:__memset_avx2_unaligned_erms) redirected to 0x4c385d0 (memset)
+--5759-- REDIR: 0x569c6c0 (libc.so.6:__GI_strstr) redirected to 0x4c39760 (__strstr_sse2)
+--5759-- REDIR: 0x4ed1330 (libstdc++.so.6:operator new[](unsigned long)) redirected to 0x4c32830 (operator new[](unsigned long))
+--5759-- REDIR: 0x4ecf3c0 (libstdc++.so.6:operator delete[](void*)) redirected to 0x4c336d0 (operator delete[](void*))
+--5759-- REDIR: 0x4ecf390 (libstdc++.so.6:operator delete(void*)) redirected to 0x4c331d0 (operator delete(void*))
+--5759-- REDIR: 0x5698170 (libc.so.6:calloc) redirected to 0x4c33a70 (calloc)
+==5759== 
+==5759== Process terminating with default action of signal 2 (SIGINT)
+==5759==    at 0x10D91C: Node::monitorResidentsHealth() (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B6C5: void std::__invoke_impl<void, void (Node::*)(), Node*>(std::__invoke_memfun_deref, void (Node::*&&)(), Node*&&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B382: std::__invoke_result<void (Node::*)(), Node*>::type std::__invoke<void (Node::*)(), Node*>(void (Node::*&&)(), Node*&&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10BC36: decltype (__invoke((_S_declval<0ul>)(), (_S_declval<1ul>)())) std::thread::_Invoker<std::tuple<void (Node::*)(), Node*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10BBD7: std::thread::_Invoker<std::tuple<void (Node::*)(), Node*> >::operator()() (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10BBA7: std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (Node::*)(), Node*> > >::_M_run() (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x4EFB6DE: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+==5759==    by 0x53E66DA: start_thread (pthread_create.c:463)
+==5759==    by 0x571F71E: clone (clone.S:95)
+==5759== 
+==5759== HEAP SUMMARY:
+==5759==     in use at exit: 281,984 bytes in 264 blocks
+==5759==   total heap usage: 271 allocs, 7 frees, 364,068 bytes allocated
+==5759== 
+==5759== Searching for pointers to 264 not-freed blocks
+==5759== Checked 25,570,232 bytes
+==5759== 
+==5759== 32 bytes in 1 blocks are still reachable in loss record 1 of 9
+==5759==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5759==    by 0x10B702: std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> > std::thread::_S_make_state<std::thread::_Invoker<std::tuple<void (Node::*)(), Node*> > >(std::thread::_Invoker<std::tuple<void (Node::*)(), Node*> >&&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B423: std::thread::thread<void (Node::*)(), Node*&>(void (Node::*&&)(), Node*&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B073: main (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759== 
+==5759== 32 bytes in 1 blocks are still reachable in loss record 2 of 9
+==5759==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5759==    by 0x10B702: std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> > std::thread::_S_make_state<std::thread::_Invoker<std::tuple<void (Node::*)(), Node*> > >(std::thread::_Invoker<std::tuple<void (Node::*)(), Node*> >&&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B423: std::thread::thread<void (Node::*)(), Node*&>(void (Node::*&&)(), Node*&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B0A3: main (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759== 
+==5759== 32 bytes in 1 blocks are still reachable in loss record 3 of 9
+==5759==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5759==    by 0x10B702: std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> > std::thread::_S_make_state<std::thread::_Invoker<std::tuple<void (Node::*)(), Node*> > >(std::thread::_Invoker<std::tuple<void (Node::*)(), Node*> >&&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B423: std::thread::thread<void (Node::*)(), Node*&>(void (Node::*&&)(), Node*&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B0D3: main (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759== 
+==5759== 288 bytes in 1 blocks are possibly lost in loss record 4 of 9
+==5759==    at 0x4C33B25: calloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5759==    by 0x4013646: allocate_dtv (dl-tls.c:286)
+==5759==    by 0x4013646: _dl_allocate_tls (dl-tls.c:530)
+==5759==    by 0x53E7227: allocate_stack (allocatestack.c:627)
+==5759==    by 0x53E7227: pthread_create@@GLIBC_2.2.5 (pthread_create.c:644)
+==5759==    by 0x4EFB994: std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> >, void (*)()) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+==5759==    by 0x10B43A: std::thread::thread<void (Node::*)(), Node*&>(void (Node::*&&)(), Node*&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B073: main (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759== 
+==5759== 288 bytes in 1 blocks are possibly lost in loss record 5 of 9
+==5759==    at 0x4C33B25: calloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5759==    by 0x4013646: allocate_dtv (dl-tls.c:286)
+==5759==    by 0x4013646: _dl_allocate_tls (dl-tls.c:530)
+==5759==    by 0x53E7227: allocate_stack (allocatestack.c:627)
+==5759==    by 0x53E7227: pthread_create@@GLIBC_2.2.5 (pthread_create.c:644)
+==5759==    by 0x4EFB994: std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> >, void (*)()) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+==5759==    by 0x10B43A: std::thread::thread<void (Node::*)(), Node*&>(void (Node::*&&)(), Node*&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B0A3: main (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759== 
+==5759== 288 bytes in 1 blocks are possibly lost in loss record 6 of 9
+==5759==    at 0x4C33B25: calloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5759==    by 0x4013646: allocate_dtv (dl-tls.c:286)
+==5759==    by 0x4013646: _dl_allocate_tls (dl-tls.c:530)
+==5759==    by 0x53E7227: allocate_stack (allocatestack.c:627)
+==5759==    by 0x53E7227: pthread_create@@GLIBC_2.2.5 (pthread_create.c:644)
+==5759==    by 0x4EFB994: std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> >, void (*)()) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+==5759==    by 0x10B43A: std::thread::thread<void (Node::*)(), Node*&>(void (Node::*&&)(), Node*&) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B0D3: main (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759== 
+==5759== 432 bytes in 1 blocks are still reachable in loss record 7 of 9
+==5759==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5759==    by 0x10C3D5: Node::Node(short, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B009: main (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759== 
+==5759== 2,064 bytes in 1 blocks are still reachable in loss record 8 of 9
+==5759==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5759==    by 0x10AFDF: main (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759== 
+==5759== 278,528 bytes in 256 blocks are still reachable in loss record 9 of 9
+==5759==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==5759==    by 0x10C1A3: Node::initDir(int) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10C471: Node::Node(short, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759==    by 0x10B009: main (in /home/isaacdchan/Documents/UIUC/CS435/MP2/bin/node)
+==5759== 
+==5759== LEAK SUMMARY:
+==5759==    definitely lost: 0 bytes in 0 blocks
+==5759==    indirectly lost: 0 bytes in 0 blocks
+==5759==      possibly lost: 864 bytes in 3 blocks
+==5759==    still reachable: 281,120 bytes in 261 blocks
+==5759==         suppressed: 0 bytes in 0 blocks
+==5759== 
+==5759== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
+==5759== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)

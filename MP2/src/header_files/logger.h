@@ -4,6 +4,7 @@
 struct Logger {
 	int testID;
 	bool verbose;
+	bool flag;
 	string logFile;
 	stringstream ss;
 	

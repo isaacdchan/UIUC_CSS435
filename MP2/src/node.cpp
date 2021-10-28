@@ -45,13 +45,6 @@ void Node::initDir(int udpSocket) {
 			dir[i]->edgeCost = 0;
 			dir[i]->nextHop = dir[i];
 		}
-		
-		char tempaddr[100];
-		sprintf(tempaddr, "10.1.1.%d", i);
-		memset(&dir[i]->sockaddr, 0, sizeof(dir[i]->sockaddr));
-		dir[i]->sockaddr.sin_family = AF_INET;
-		dir[i]->sockaddr.sin_port = htons(7777);
-		inet_pton(AF_INET, tempaddr, &dir[i]->sockaddr.sin_addr);
 	}
 }
 

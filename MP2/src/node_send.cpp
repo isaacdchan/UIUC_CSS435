@@ -10,7 +10,7 @@ void Node::broadcastHeartbeat()
 {
 	struct timespec sleepFor;
 	sleepFor.tv_sec = 0;
-	sleepFor.tv_nsec = 100 * 1000 * 1000; //100 ms
+	sleepFor.tv_nsec = 300 * 1000 * 1000; //300 ms
 	while(1) {
 		for (Resident* r: dir) {
 			if (r->pathCost != INT_MAX) { broadcastPathCost(r); }

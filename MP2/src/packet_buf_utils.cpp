@@ -1,6 +1,16 @@
 #include "header_files/packet.h"
 #include "header_files/imports.h"
 
+void Packet::extractTTL() {
+	if (fromManager) {
+		TTL = MAX_TTL;
+	} else {
+		int raw_TTL;
+		memcpy(&raw_TTL, rawPacket + sendHeader_size + nodeID_size, TTL_size);
+		TTL = ntohl(raw_TTL);
+	}
+}
+
 void Packet::extractMessage() {
 	int bias = fromManager ? sendHeader_size : forwardHeader_size;
 	int messageLength = bytesRecvd - bias;
@@ -19,8 +29,10 @@ void Packet::extractOrigin() {
 		origin = ntohs(origin);
 	}
 }
+
 char* Packet::constructSendPacket() {
-	char* newPacket = new char[bytesRecvd+nodeID_size];
+	char* newPacket = new char[bytesRecvd+nodeID_size+TTL_size];
+	int no_TTL = htonl(TTL);
 
 	short int no_origin;
 	if (fromManager) {
@@ -34,6 +46,7 @@ char* Packet::constructSendPacket() {
 
 	memcpy(newPacket, rawPacket, sendHeader_size);
 	memcpy(newPacket + sendHeader_size, &no_origin, nodeID_size);
-	memcpy(newPacket + sendHeader_size + nodeID_size, rawPacket + bias, messageLength);
+	memcpy(newPacket + sendHeader_size + nodeID_size, &no_TTL, TTL_size);
+	memcpy(newPacket + sendHeader_size + nodeID_size + TTL_size, rawPacket + bias, messageLength);
 	return newPacket;
 }

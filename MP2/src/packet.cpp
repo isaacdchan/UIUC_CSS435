@@ -66,15 +66,12 @@ void Packet::handlePathOP() {
 	int currPathCost = dest->pathCost;
 	int candidatePathCost = src->edgeCost + srcToDestCost;
 
-	// if (candidatePathCost >= 16) {
-	// 	node->logger->addUnreachable(dest->id);
-	// 	node->killPath(dest);
-	// 	node->broadcastPathCost(dest);
-	// }
-
 	// if my path to dest will be affected by src path to dest - update
 	if (dest->nextHop == src && currPathCost != candidatePathCost) {
+		node->logger->ss << "Received news that node" << src->id << " can't reach node" << dest->id;
+		node->logger->add();
 		node->updatePath(dest, src, candidatePathCost);
+		node->broadcastPathCost(dest);
 	} else {
 		// tiebreak based on lower value
 		if (candidatePathCost < currPathCost ||
@@ -86,7 +83,7 @@ void Packet::handlePathOP() {
 }
 
 // from manager: send<dest><message> ex. send4hello
-// from  node: send<dest><src><message> send42hello
+// from  node: send<dest><src><MAX_TTL><message> send4216hello
 void Packet::handleSendOP() {
 	extractOrigin();
 	fromManager = (origin == -1) ? true : false;
@@ -97,6 +94,19 @@ void Packet::handleSendOP() {
 		return;
 	}
 
+	extractTTL();
+
+	node->logger->ss << "TTL: " << TTL;
+	node->logger->add();
+	if (TTL <= 0) {
+		node->logger->addUnreachable(dest->id);
+		node->killPath(dest);
+		node->broadcastPathCost(dest);
+		return;
+	}
+
+	if ( !fromManager ) { TTL-=1; }
+	
 	// currNextHop is missing or dead
 	if (dest->nextHop == NULL || !dest->nextHop->edgeIsActive) {
 		node->findAltPath(dest);
@@ -105,12 +115,16 @@ void Packet::handleSendOP() {
 		char* newRawPacket = constructSendPacket();
 		if (fromManager) {
 			node->logger->addSend(dest->nextHop->id, dest->id, message);
-			dest->nextHop->send(newRawPacket, bytesRecvd+nodeID_size);
+			dest->nextHop->send(newRawPacket, bytesRecvd+nodeID_size+TTL_size);
 		} else  {
 			node->logger->addForward(src->id, dest->nextHop->id, dest->id, message);
 			dest->nextHop->send(newRawPacket, bytesRecvd);
 		}
 		delete newRawPacket;
+	} else {
+		node->logger->addUnreachable(dest->id);
+		node->killPath(dest);
+		node->broadcastPathCost(dest);
 	}
 
 }

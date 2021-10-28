@@ -42,13 +42,10 @@ void Node::listenForMessages() {
 
 		inet_ntop(AF_INET, &theirAddr.sin_addr, fromAddr, 100);
 
-		// manager
 		if(strstr(fromAddr, "10.0.0."))	{
 			Packet p = Packet(this, -1, bytesRecvd, recvBuf);
 		}
-		// neighbor
 		if(strstr(fromAddr, "10.1.1."))	{
-			// extract broadcasting neighbor id
 			short int sender = atoi(
 					strchr(strchr(strchr(fromAddr,'.')+1,'.')+1,'.')+1);
 			
@@ -63,7 +60,6 @@ void Node::updatePath(Resident* dest, Resident* nextHop, int newPathCost) {
 	dest->nextHop = nextHop;
 	dest->pathCost = newPathCost;
 	logger->addPathCostUpdate(dest->id, nextHop->id, newPathCost);
-	broadcastPathCost(dest);
 }
 
 void Node::killPath(Resident* dest) {
@@ -71,7 +67,6 @@ void Node::killPath(Resident* dest) {
 	logger->add();
 	dest->nextHop = NULL;
 	dest->pathCost = INT_MAX;
-	// broadcastPathCost(dest);
 }
 
 void Node::findAltPath(Resident* dest) {
@@ -101,8 +96,15 @@ void Node::findAltPath(Resident* dest) {
 		logger->ss << "\tAlt path found";
 		logger->add();
 		updatePath(dest, altNextHop, cheapestAltPathCost);
+		broadcastPathCost(dest);
 	} else {
 		logger->ss << "\tNo alt path found";
 		logger->add();
 	}
 }
+
+
+// node11 discovers that his previous cost3 path to node77 via node66 is down
+// node11 finds the next cheapest path to node77 through node1 that costs4
+// node11 updates his cost to node77 to edgeCost to node1 (1) + node1 pathCost to node77 (4)
+// node1 discovers that his previous cost to 

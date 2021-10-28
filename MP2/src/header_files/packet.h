@@ -14,11 +14,12 @@ struct Packet
 
 	int bytesRecvd;
 	bool fromManager;
+	int TTL;
 	char* rawPacket;
 	string message;
 
 	int sendHeader_size = op_size + nodeID_size;
-	int forwardHeader_size = op_size + nodeID_size + nodeID_size;
+	int forwardHeader_size = op_size + nodeID_size + nodeID_size + TTL_size;
 
 	Packet(Node* node, int srcID, int bytesRecvd, char* rawPacket);
 
@@ -27,6 +28,7 @@ struct Packet
 	void handleCostOP();
 
 	// packet_buf_utils
+	void extractTTL();
 	void extractMessage();
 	void extractOrigin();
 	char* constructSendPacket();
